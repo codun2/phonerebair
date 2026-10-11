@@ -15,7 +15,7 @@ Route::get('/health', function () {
         $db = 'error';
     }
 
-    return response()->json(['message' => 'MobileFix API up', 'db' => $db]);
+    return response()->json(['message' => 'MobileFix API up', 'db' => $db, 'host' => request()->getHost()]);
 });
 
 // ---- الموقع العام (بلا تسجيل) ----
