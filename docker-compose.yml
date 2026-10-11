@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8
+    container_name: repair-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: repair
+      MYSQL_USER: repair
+      MYSQL_PASSWORD: repair
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3397:3306"
+    volumes:
+      - repair_db:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./docker/php
+    container_name: repair-backend
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "php artisan serve --host=0.0.0.0 --port=8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8097:8000"
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20
+    container_name: repair-frontend
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "corepack enable >/dev/null 2>&1; yarn install --network-timeout 600000 && yarn dev --host 0.0.0.0 --port 3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: http://localhost:8097/api
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3097:3000"
+    depends_on:
+      - backend
+
+volumes:
+  repair_db:
