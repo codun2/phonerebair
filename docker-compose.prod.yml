@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: repair-db
+    environment:
+      MYSQL_DATABASE: repair
+      MYSQL_USER: repair
+      MYSQL_PASSWORD: Repair_pr0d_7kN3p
+      MYSQL_ROOT_PASSWORD: Repair_root_9wZ5x
+    volumes:
+      - db-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+
+  backend:
+    build: ./docker/php
+    container_name: repair-backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "php artisan serve --host=0.0.0.0 --port=8000"
+    environment:
+      - PHP_CLI_SERVER_WORKERS=4
+    ports:
+      - "127.0.0.1:8005:8000"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    image: node:20
+    container_name: repair-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: sh -c "node .output/server/index.mjs"
+    environment:
+      - NITRO_HOST=0.0.0.0
+      - NITRO_PORT=3000
+      - NUXT_PUBLIC_API_BASE=https://phonerebair.smartunita.com/api
+    ports:
+      - "127.0.0.1:8006:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db-data:
