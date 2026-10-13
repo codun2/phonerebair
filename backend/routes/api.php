@@ -74,11 +74,13 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/dashboard/tickets/{ticket}/status', [DashboardController::class, 'ticketStatus']);
     Route::delete('/dashboard/tickets/{ticket}', [DashboardController::class, 'destroyTicket']);
 
-    // المخزون
-    Route::get('/dashboard/inventory', [DashboardController::class, 'inventory']);
-    Route::post('/dashboard/inventory', [DashboardController::class, 'storeItem']);
-    Route::put('/dashboard/inventory/{item}', [DashboardController::class, 'updateItem']);
-    Route::delete('/dashboard/inventory/{item}', [DashboardController::class, 'destroyItem']);
+    // المخزون — ميزة اختيارية لكل محل (feature flag)
+    Route::middleware('feature:inventory')->group(function () {
+        Route::get('/dashboard/inventory', [DashboardController::class, 'inventory']);
+        Route::post('/dashboard/inventory', [DashboardController::class, 'storeItem']);
+        Route::put('/dashboard/inventory/{item}', [DashboardController::class, 'updateItem']);
+        Route::delete('/dashboard/inventory/{item}', [DashboardController::class, 'destroyItem']);
+    });
 
     // الفنيون
     Route::get('/dashboard/technicians', [DashboardController::class, 'technicians']);

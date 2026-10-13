@@ -36,7 +36,13 @@ export function useShop(slug: string) {
   // هل يظهر القسم؟ (افتراضيًا نعم، ما لم يُضبط '0')
   const show = (key: string) => settings.value['show_' + key] !== '0'
 
+  // هل الميزة مفعّلة لهذا المحل؟ (تأتي features مع إعدادات الموقع العام)
+  const hasFeature = (key: string) => {
+    const f = (settings.value as any).features
+    return Array.isArray(f) && f.includes(key)
+  }
+
   const base = `/s/${slug}`
 
-  return { settings, loadSettings, waLink, base, slug, themeVars, show }
+  return { settings, loadSettings, waLink, base, slug, themeVars, show, hasFeature }
 }

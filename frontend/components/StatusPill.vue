@@ -1,9 +1,10 @@
 <template>
-  <span class="pill" :class="cls">{{ label }}</span>
+  <span class="pill" :class="cls">{{ t(label || '') }}</span>
 </template>
 
 <script setup>
 const props = defineProps({ status: String, label: String })
+const { t } = useI18n()
 const map = {
   received: 'pill-r',
   awaiting_approval: 'pill-y',

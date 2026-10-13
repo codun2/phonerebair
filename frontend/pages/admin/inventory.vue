@@ -49,6 +49,7 @@
 <script setup>
 const { api } = useApi()
 const { confirmDlg } = useConfirm()
+const { has, ensure } = useFeatures()
 const items = ref([])
 const form = ref(null)
 const err = ref('')
@@ -70,7 +71,11 @@ async function remove(it) {
   if (!await confirmDlg('حذف القطعة', it.name)) return
   await api('/dashboard/inventory/' + it.id, { method: 'DELETE' }); await load()
 }
-onMounted(load)
+onMounted(async () => {
+  await ensure()
+  if (!has('inventory')) return navigateTo('/admin')
+  await load()
+})
 </script>
 
 <style scoped>

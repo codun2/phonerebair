@@ -1,46 +1,46 @@
 <template>
   <SuperShell active="plans">
-    <div class="page-title">الباقات</div>
-    <p class="page-sub">باقات الاشتراك المتاحة للمحلات</p>
+    <div class="page-title">{{ t('الباقات') }}</div>
+    <p class="page-sub">{{ t('باقات الاشتراك المتاحة للمحلات') }}</p>
 
     <div class="panel">
       <div class="ph">
-        <h3>قائمة الباقات</h3>
-        <button class="btn btn-accent" @click="openNew"><i class="ti ti-plus"></i> باقة جديدة</button>
+        <h3>{{ t('قائمة الباقات') }}</h3>
+        <button class="btn btn-accent" @click="openNew"><i class="ti ti-plus"></i> {{ t('باقة جديدة') }}</button>
       </div>
 
       <div v-if="editing" class="addbox">
         <div class="arow">
-          <input v-model="f.name" placeholder="اسم الباقة" />
-          <input v-model.number="f.price" type="number" placeholder="السعر (ر.س)" dir="ltr" />
-          <input v-model.number="f.duration_days" type="number" placeholder="المدة (أيام)" dir="ltr" />
-          <input v-model.number="f.max_technicians" type="number" placeholder="حد الفنيين (فارغ=∞)" dir="ltr" />
-          <label class="chk"><input type="checkbox" v-model="f.is_active" /> مفعّلة</label>
+          <input v-model="f.name" :placeholder="t('اسم الباقة')" />
+          <input v-model.number="f.price" type="number" :placeholder="t('السعر (ر.س)')" dir="ltr" />
+          <input v-model.number="f.duration_days" type="number" :placeholder="t('المدة (أيام)')" dir="ltr" />
+          <input v-model.number="f.max_technicians" type="number" :placeholder="t('حد الفنيين (فارغ=∞)')" dir="ltr" />
+          <label class="chk"><input type="checkbox" v-model="f.is_active" /> {{ t('مفعّلة') }}</label>
         </div>
-        <input v-model="f.description" placeholder="وصف مختصر" style="width:100%;margin-top:8px;height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-family:inherit" />
+        <input v-model="f.description" :placeholder="t('وصف مختصر')" style="width:100%;margin-top:8px;height:38px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-family:inherit" />
         <div v-if="err" class="err" style="margin-top:8px">{{ err }}</div>
         <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btn-accent" :disabled="busy" @click="save">{{ f.id ? 'حفظ التعديل' : 'إضافة' }}</button>
-          <button class="btn" @click="editing = false">إلغاء</button>
+          <button class="btn btn-accent" :disabled="busy" @click="save">{{ f.id ? t('حفظ التعديل') : t('إضافة') }}</button>
+          <button class="btn" @click="editing = false">{{ t('إلغاء') }}</button>
         </div>
       </div>
 
       <table>
-        <thead><tr><th>الباقة</th><th>السعر</th><th>المدة</th><th>حد الفنيين</th><th>محلات</th><th>الحالة</th><th></th></tr></thead>
+        <thead><tr><th>{{ t('الباقة') }}</th><th>{{ t('السعر') }}</th><th>{{ t('المدة') }}</th><th>{{ t('حد الفنيين') }}</th><th>{{ t('محلات') }}</th><th>{{ t('الحالة') }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="p in rows" :key="p.id">
             <td><b>{{ p.name }}</b><div class="muted">{{ p.description || '' }}</div></td>
-            <td dir="ltr">{{ Number(p.price).toLocaleString('ar-EG') }} ر.س</td>
-            <td>{{ p.duration_days }} يوم</td>
-            <td>{{ p.max_technicians ?? 'غير محدود' }}</td>
+            <td dir="ltr">{{ Number(p.price).toLocaleString(isEn ? 'en-US' : 'ar-EG') }} {{ t('ر.س') }}</td>
+            <td>{{ p.duration_days }} {{ t('يوم') }}</td>
+            <td>{{ p.max_technicians ?? t('غير محدود') }}</td>
             <td>{{ p.shops_count }}</td>
-            <td><span class="pill" :class="p.is_active ? 'pill-g' : 'pill-gray'">{{ p.is_active ? 'مفعّلة' : 'متوقفة' }}</span></td>
+            <td><span class="pill" :class="p.is_active ? 'pill-g' : 'pill-gray'">{{ p.is_active ? t('مفعّلة') : t('متوقفة') }}</span></td>
             <td class="acts">
-              <button class="act" title="تعديل" @click="openEdit(p)"><i class="ti ti-edit"></i></button>
-              <button class="act danger" title="حذف" @click="del(p)"><i class="ti ti-trash"></i></button>
+              <button class="act" :title="t('تعديل')" @click="openEdit(p)"><i class="ti ti-edit"></i></button>
+              <button class="act danger" :title="t('حذف')" @click="del(p)"><i class="ti ti-trash"></i></button>
             </td>
           </tr>
-          <tr v-if="!rows.length"><td colspan="7" class="empty">لا توجد باقات</td></tr>
+          <tr v-if="!rows.length"><td colspan="7" class="empty">{{ t('لا توجد باقات') }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -49,6 +49,7 @@
 
 <script setup>
 const sa = useSuperAdmin()
+const { t, isEn } = useI18n()
 const rows = ref([])
 const editing = ref(false)
 const busy = ref(false)

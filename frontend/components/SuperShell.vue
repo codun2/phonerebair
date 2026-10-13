@@ -3,17 +3,18 @@
     <aside class="side">
       <div class="su">
         <div class="av"><i class="ti ti-building-store"></i></div>
-        <div><b>إدارة المنصّة</b><small>Super Admin</small></div>
+        <div><b>{{ t('إدارة المنصّة') }}</b><small>Super Admin</small></div>
       </div>
       <nav>
-        <div class="grp">المنصّة</div>
-        <NuxtLink to="/super" :class="{ on: active === 'overview' }"><i class="ti ti-layout-dashboard"></i> نظرة عامة</NuxtLink>
-        <NuxtLink to="/super" :class="{ on: active === 'shops' }"><i class="ti ti-building-store"></i> المحلات</NuxtLink>
-        <NuxtLink to="/super/plans" :class="{ on: active === 'plans' }"><i class="ti ti-tag"></i> الباقات</NuxtLink>
+        <div class="grp">{{ t('المنصّة') }}</div>
+        <NuxtLink to="/super" :class="{ on: active === 'overview' }"><i class="ti ti-layout-dashboard"></i> {{ t('نظرة عامة') }}</NuxtLink>
+        <NuxtLink to="/super" :class="{ on: active === 'shops' }"><i class="ti ti-building-store"></i> {{ t('المحلات') }}</NuxtLink>
+        <NuxtLink to="/super/plans" :class="{ on: active === 'plans' }"><i class="ti ti-tag"></i> {{ t('الباقات') }}</NuxtLink>
       </nav>
       <div class="side-foot">
-        <div class="su2"><div class="av2">{{ (user?.name || 'مد').slice(0,2) }}</div><div><b>{{ user?.name || 'المدير العام' }}</b><small>مدير المنصّة</small></div></div>
-        <button class="sf" @click="logout"><i class="ti ti-logout"></i> خروج</button>
+        <div style="margin-bottom:10px"><LangSwitch /></div>
+        <div class="su2"><div class="av2">{{ (user?.name || 'مد').slice(0,2) }}</div><div><b>{{ user?.name || t('المدير العام') }}</b><small>{{ t('مدير المنصّة') }}</small></div></div>
+        <button class="sf" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
       </div>
     </aside>
     <main class="main">
@@ -25,6 +26,7 @@
 <script setup>
 defineProps({ active: String })
 const { user, fetchMe, logout } = useAuth()
+const { t } = useI18n()
 
 onMounted(async () => {
   const u = user.value || await fetchMe()

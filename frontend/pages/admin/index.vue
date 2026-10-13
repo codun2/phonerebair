@@ -1,42 +1,42 @@
 <template>
   <DashShell active="overview">
-    <div class="page-title">لوحة المعلومات</div>
-    <p class="page-sub">ملخّص اليوم</p>
+    <div class="page-title">{{ t('لوحة المعلومات') }}</div>
+    <p class="page-sub">{{ t('ملخّص اليوم') }}</p>
 
     <div class="kpis">
-      <div class="kpi"><div class="ic" style="background:#E6F1FB;color:var(--accent)"><i class="ti ti-ticket"></i></div><div class="num">{{ s.open_tickets ?? '—' }}</div><div class="lbl">تذاكر مفتوحة</div></div>
-      <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-cash"></i></div><div class="num">{{ fmt(s.today_revenue) }}</div><div class="lbl">إيراد اليوم (ر.س)</div></div>
-      <div class="kpi"><div class="ic" style="background:#EEEDFE;color:#534AB7"><i class="ti ti-tool"></i></div><div class="num">{{ s.in_repair ?? '—' }}</div><div class="lbl">قيد التصليح الآن</div></div>
-      <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-alert-triangle"></i></div><div class="num">{{ s.low_stock ?? '—' }}</div><div class="lbl">قطع قاربت النفاد</div></div>
+      <div class="kpi"><div class="ic" style="background:#E6F1FB;color:var(--accent)"><i class="ti ti-ticket"></i></div><div class="num">{{ s.open_tickets ?? '—' }}</div><div class="lbl">{{ t('تذاكر مفتوحة') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-cash"></i></div><div class="num">{{ fmt(s.today_revenue) }}</div><div class="lbl">{{ t('إيراد اليوم (ر.س)') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#EEEDFE;color:#534AB7"><i class="ti ti-tool"></i></div><div class="num">{{ s.in_repair ?? '—' }}</div><div class="lbl">{{ t('قيد التصليح الآن') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-alert-triangle"></i></div><div class="num">{{ s.low_stock ?? '—' }}</div><div class="lbl">{{ t('قطع قاربت النفاد') }}</div></div>
     </div>
 
     <div class="cols">
       <div class="panel">
-        <div class="ph"><h3>أحدث التذاكر</h3><NuxtLink to="/admin/tickets" class="link">عرض الكل ←</NuxtLink></div>
+        <div class="ph"><h3>{{ t('أحدث التذاكر') }}</h3><NuxtLink to="/admin/tickets" class="link">{{ t('عرض الكل ←') }}</NuxtLink></div>
         <table>
-          <thead><tr><th>التذكرة</th><th>الزبون</th><th>الجهاز</th><th>الحالة</th><th>الفني</th></tr></thead>
+          <thead><tr><th>{{ t('التذكرة') }}</th><th>{{ t('الزبون') }}</th><th>{{ t('الجهاز') }}</th><th>{{ t('الحالة') }}</th><th>{{ t('الفني') }}</th></tr></thead>
           <tbody>
-            <tr v-for="t in s.recent || []" :key="t.id" @click="go(t.id)" style="cursor:pointer">
-              <td><b style="color:var(--accent-d)">{{ t.ticket_no }}</b></td>
-              <td>{{ t.customer_name }}</td>
-              <td>{{ t.device }} <span class="muted">· {{ t.repair_type }}</span></td>
-              <td><StatusPill :status="t.status" :label="t.status_label" /></td>
-              <td>{{ t.technician || '—' }}</td>
+            <tr v-for="tk in s.recent || []" :key="tk.id" @click="go(tk.id)" style="cursor:pointer">
+              <td><b style="color:var(--accent-d)">{{ tk.ticket_no }}</b></td>
+              <td>{{ tk.customer_name }}</td>
+              <td>{{ tk.device }} <span class="muted">· {{ tk.repair_type }}</span></td>
+              <td><StatusPill :status="tk.status" :label="tk.status_label" /></td>
+              <td>{{ tk.technician || '—' }}</td>
             </tr>
-            <tr v-if="!(s.recent||[]).length"><td colspan="5" class="empty">لا توجد تذاكر</td></tr>
+            <tr v-if="!(s.recent||[]).length"><td colspan="5" class="empty">{{ t('لا توجد تذاكر') }}</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="panel">
-        <div class="ph"><h3>أداء الفنيين اليوم</h3></div>
-        <div v-for="t in s.tech_perf || []" :key="t.id" class="trow">
-          <div class="tav">{{ t.name.slice(0,2) }}</div>
-          <div style="flex:1"><b>{{ t.name }}</b><div class="muted">{{ t.done_today }} تذاكر مكتملة</div></div>
-          <span class="pill" :class="t.active ? 'pill-g' : 'pill-gray'">{{ t.active ? 'نشط' : 'متوقف' }}</span>
+        <div class="ph"><h3>{{ t('أداء الفنيين اليوم') }}</h3></div>
+        <div v-for="tk in s.tech_perf || []" :key="tk.id" class="trow">
+          <div class="tav">{{ tk.name.slice(0,2) }}</div>
+          <div style="flex:1"><b>{{ tk.name }}</b><div class="muted">{{ tk.done_today }} {{ t('تذاكر مكتملة') }}</div></div>
+          <span class="pill" :class="tk.active ? 'pill-g' : 'pill-gray'">{{ tk.active ? t('نشط') : t('متوقف') }}</span>
         </div>
-        <div v-if="!(s.tech_perf||[]).length" class="empty">لا يوجد فنيون</div>
-        <NuxtLink to="/admin/technicians" class="link" style="display:block;text-align:center;margin-top:12px">إدارة الفنيين ←</NuxtLink>
+        <div v-if="!(s.tech_perf||[]).length" class="empty">{{ t('لا يوجد فنيون') }}</div>
+        <NuxtLink to="/admin/technicians" class="link" style="display:block;text-align:center;margin-top:12px">{{ t('إدارة الفنيين ←') }}</NuxtLink>
       </div>
     </div>
   </DashShell>
@@ -44,8 +44,9 @@
 
 <script setup>
 const { api } = useApi()
+const { t, isEn } = useI18n()
 const s = ref({})
-const fmt = (n) => Number(n || 0).toLocaleString('ar-EG')
+const fmt = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
 const go = (id) => navigateTo('/admin/tickets?open=' + id)
 onMounted(async () => { try { s.value = await api('/dashboard/stats') } catch {} })
 </script>

@@ -3,29 +3,30 @@
     <aside class="side">
       <div class="su">
         <div class="av"><i class="ti ti-device-mobile"></i></div>
-        <div><b>موبايل فيكس</b><small>لوحة التحكم</small></div>
+        <div><b>{{ user?.shop?.name || 'موبايل فيكس' }}</b><small>{{ t('لوحة التحكم') }}</small></div>
       </div>
       <nav>
-        <div class="grp">الرئيسية</div>
-        <NuxtLink to="/admin" :class="{ on: active === 'overview' }"><i class="ti ti-layout-dashboard"></i> لوحة المعلومات</NuxtLink>
-        <NuxtLink to="/admin/tickets" :class="{ on: active === 'tickets' }"><i class="ti ti-ticket"></i> التذاكر</NuxtLink>
-        <NuxtLink to="/admin/ticket-new" :class="{ on: active === 'ticket-new' }"><i class="ti ti-plus"></i> تذكرة جديدة</NuxtLink>
-        <div class="grp">الإدارة</div>
-        <NuxtLink to="/admin/inventory" :class="{ on: active === 'inventory' }"><i class="ti ti-packages"></i> المخزون</NuxtLink>
-        <NuxtLink to="/admin/technicians" :class="{ on: active === 'technicians' }"><i class="ti ti-users"></i> الفنيون</NuxtLink>
+        <div class="grp">{{ t('الرئيسية') }}</div>
+        <NuxtLink to="/admin" :class="{ on: active === 'overview' }"><i class="ti ti-layout-dashboard"></i> {{ t('لوحة المعلومات') }}</NuxtLink>
+        <NuxtLink to="/admin/tickets" :class="{ on: active === 'tickets' }"><i class="ti ti-ticket"></i> {{ t('التذاكر') }}</NuxtLink>
+        <NuxtLink to="/admin/ticket-new" :class="{ on: active === 'ticket-new' }"><i class="ti ti-plus"></i> {{ t('تذكرة جديدة') }}</NuxtLink>
+        <div class="grp">{{ t('الإدارة') }}</div>
+        <NuxtLink v-if="has('inventory')" to="/admin/inventory" :class="{ on: active === 'inventory' }"><i class="ti ti-packages"></i> {{ t('المخزون') }}</NuxtLink>
+        <NuxtLink to="/admin/technicians" :class="{ on: active === 'technicians' }"><i class="ti ti-users"></i> {{ t('الفنيون') }}</NuxtLink>
         <NuxtLink to="/admin/bookings" :class="{ on: active === 'bookings' }">
-          <i class="ti ti-calendar"></i> الحجوزات
+          <i class="ti ti-calendar"></i> {{ t('الحجوزات') }}
           <span v-if="newBookings" class="nbadge">{{ newBookings }}</span>
         </NuxtLink>
-        <div class="grp">أخرى</div>
-        <NuxtLink to="/admin/prices" :class="{ on: active === 'prices' }"><i class="ti ti-tag"></i> الأسعار والأعطال</NuxtLink>
-        <NuxtLink to="/admin/catalog" :class="{ on: active === 'catalog' }"><i class="ti ti-list-details"></i> الماركات والموديلات</NuxtLink>
-        <NuxtLink to="/admin/settings" :class="{ on: active === 'settings' }"><i class="ti ti-settings"></i> الإعدادات</NuxtLink>
+        <div class="grp">{{ t('أخرى') }}</div>
+        <NuxtLink to="/admin/prices" :class="{ on: active === 'prices' }"><i class="ti ti-tag"></i> {{ t('الأسعار والأعطال') }}</NuxtLink>
+        <NuxtLink to="/admin/catalog" :class="{ on: active === 'catalog' }"><i class="ti ti-list-details"></i> {{ t('الماركات والموديلات') }}</NuxtLink>
+        <NuxtLink to="/admin/settings" :class="{ on: active === 'settings' }"><i class="ti ti-settings"></i> {{ t('الإعدادات') }}</NuxtLink>
       </nav>
       <div class="side-foot">
-        <div class="su2"><div class="av2">{{ (user?.name || 'م').slice(0,2) }}</div><div><b>{{ user?.name || 'المدير' }}</b><small>مدير عام</small></div></div>
-        <NuxtLink to="/" class="sf"><i class="ti ti-world"></i> عرض الموقع</NuxtLink>
-        <button class="sf" @click="logout"><i class="ti ti-logout"></i> خروج</button>
+        <div style="margin-bottom:10px"><LangSwitch /></div>
+        <div class="su2"><div class="av2">{{ (user?.name || 'م').slice(0,2) }}</div><div><b>{{ user?.name || t('المدير') }}</b><small>{{ t('مدير عام') }}</small></div></div>
+        <NuxtLink to="/" class="sf"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</NuxtLink>
+        <button class="sf" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
       </div>
     </aside>
     <main class="dmain"><slot /></main>
@@ -36,10 +37,13 @@
 <script setup>
 defineProps({ active: { type: String, default: 'overview' } })
 const { user, logout } = useAuth()
+const { t } = useI18n()
 const { api } = useApi()
+const { has, ensure } = useFeatures()
 
 const newBookings = ref(0)
 onMounted(async () => {
+  await ensure()
   try { newBookings.value = (await api('/dashboard/stats')).new_bookings } catch {}
 })
 </script>

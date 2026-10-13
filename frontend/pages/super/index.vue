@@ -1,17 +1,17 @@
 <template>
   <SuperShell active="shops">
-    <div class="page-title">نظرة عامة</div>
-    <p class="page-sub">إدارة محلات المنصّة والاشتراكات</p>
+    <div class="page-title">{{ t('نظرة عامة') }}</div>
+    <p class="page-sub">{{ t('إدارة محلات المنصّة والاشتراكات') }}</p>
 
     <div class="kpis">
-      <div class="kpi"><div class="ic" style="background:#E6F1FB;color:var(--accent)"><i class="ti ti-building-store"></i></div><div class="num">{{ st.shops_total ?? '—' }}</div><div class="lbl">إجمالي المحلات</div></div>
-      <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-circle-check"></i></div><div class="num">{{ st.shops_active ?? '—' }}</div><div class="lbl">محلات فعّالة</div></div>
-      <div class="kpi"><div class="ic" style="background:#FEF3E0;color:#B5790E"><i class="ti ti-clock"></i></div><div class="num">{{ st.shops_pending ?? '—' }}</div><div class="lbl">بانتظار الموافقة</div></div>
-      <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-ticket"></i></div><div class="num">{{ st.tickets_total ?? '—' }}</div><div class="lbl">إجمالي التذاكر</div></div>
+      <div class="kpi"><div class="ic" style="background:#E6F1FB;color:var(--accent)"><i class="ti ti-building-store"></i></div><div class="num">{{ st.shops_total ?? '—' }}</div><div class="lbl">{{ t('إجمالي المحلات') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-circle-check"></i></div><div class="num">{{ st.shops_active ?? '—' }}</div><div class="lbl">{{ t('محلات فعّالة') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#FEF3E0;color:#B5790E"><i class="ti ti-clock"></i></div><div class="num">{{ st.shops_pending ?? '—' }}</div><div class="lbl">{{ t('بانتظار الموافقة') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-ticket"></i></div><div class="num">{{ st.tickets_total ?? '—' }}</div><div class="lbl">{{ t('إجمالي التذاكر') }}</div></div>
     </div>
 
     <div v-if="pending.length" class="reqs">
-      <div class="reqs-h"><i class="ti ti-bell-ringing"></i> طلبات تسجيل جديدة بانتظار قرارك ({{ pending.length }})</div>
+      <div class="reqs-h"><i class="ti ti-bell-ringing"></i> {{ t('طلبات تسجيل جديدة بانتظار قرارك') }} ({{ pending.length }})</div>
       <div v-for="s in pending" :key="s.id" class="req">
         <div class="req-info">
           <b>{{ s.name }}</b>
@@ -20,47 +20,60 @@
           <span class="muted" dir="ltr">· {{ s.email || '' }}</span>
         </div>
         <div class="req-acts">
-          <button class="btn btn-accept" @click="doApprove(s)"><i class="ti ti-check"></i> قبول</button>
-          <button class="btn btn-reject" @click="doReject(s)"><i class="ti ti-x"></i> رفض</button>
+          <button class="btn btn-accept" @click="doApprove(s)"><i class="ti ti-check"></i> {{ t('قبول') }}</button>
+          <button class="btn btn-reject" @click="doReject(s)"><i class="ti ti-x"></i> {{ t('رفض') }}</button>
         </div>
       </div>
     </div>
 
     <div class="panel">
       <div class="ph">
-        <h3>المحلات</h3>
+        <h3>{{ t('المحلات') }}</h3>
         <div style="display:flex;gap:8px;align-items:center">
-          <input v-model="q" @input="debouncedLoad" placeholder="بحث بالاسم/الهاتف…" class="search" />
+          <input v-model="q" @input="debouncedLoad" :placeholder="t('بحث بالاسم/الهاتف…')" class="search" />
           <select v-model="statusFilter" @change="load" class="search" style="width:150px">
-            <option value="">كل الحالات</option>
-            <option value="pending">بانتظار الموافقة</option>
-            <option value="active">فعّال</option>
-            <option value="suspended">موقوف</option>
+            <option value="">{{ t('كل الحالات') }}</option>
+            <option value="pending">{{ t('بانتظار الموافقة') }}</option>
+            <option value="active">{{ t('فعّال') }}</option>
+            <option value="suspended">{{ t('موقوف') }}</option>
           </select>
-          <button class="btn btn-accent" @click="showAdd = !showAdd"><i class="ti ti-plus"></i> محل جديد</button>
+          <button class="btn btn-accent" @click="showAdd = !showAdd"><i class="ti ti-plus"></i> {{ t('محل جديد') }}</button>
         </div>
       </div>
 
       <div v-if="showAdd" class="addbox">
         <div class="arow">
-          <input v-model="nw.shop_name" placeholder="اسم المحل" />
-          <input v-model="nw.owner_name" placeholder="اسم المالك" />
-          <input v-model="nw.phone" placeholder="الهاتف" dir="ltr" />
-          <input v-model="nw.email" placeholder="البريد" dir="ltr" />
-          <input v-model="nw.password" placeholder="كلمة المرور" dir="ltr" />
-          <select v-model="nw.plan_id"><option :value="null">بدون باقة</option><option v-for="p in plansList" :key="p.id" :value="p.id">{{ p.name }}</option></select>
-          <button class="btn btn-accent" :disabled="busy" @click="add">حفظ</button>
+          <input v-model="nw.shop_name" :placeholder="t('اسم المحل')" />
+          <input v-model="nw.owner_name" :placeholder="t('اسم المالك')" />
+          <input v-model="nw.phone" :placeholder="t('الهاتف')" dir="ltr" />
+          <input v-model="nw.email" :placeholder="t('البريد')" dir="ltr" />
+          <input v-model="nw.password" :placeholder="t('كلمة المرور')" dir="ltr" />
+          <select v-model="nw.plan_id"><option :value="null">{{ t('بدون باقة') }}</option><option v-for="p in plansList" :key="p.id" :value="p.id">{{ p.name }}</option></select>
+          <button class="btn btn-accent" :disabled="busy" @click="add">{{ t('حفظ') }}</button>
         </div>
         <div v-if="addErr" class="err" style="margin-top:8px">{{ addErr }}</div>
       </div>
 
+      <div v-if="featShop" class="addbox">
+        <div style="font-weight:700;margin-bottom:10px"><i class="ti ti-adjustments"></i> مميزات محل: {{ featShop.name }}</div>
+        <div class="feat-grid">
+          <label v-for="(label, key) in featCatalog" :key="key" class="tg">
+            <input type="checkbox" :value="key" v-model="featSel" /> <span>{{ label }}</span>
+          </label>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-accent" :disabled="busy" @click="saveFeatures"><i class="ti ti-device-floppy"></i> حفظ المميزات</button>
+          <button class="btn" @click="featShop = null">إلغاء</button>
+        </div>
+      </div>
+
       <table>
-        <thead><tr><th>المحل</th><th>التواصل</th><th>الحالة</th><th>الباقة</th><th>ينتهي</th><th>تذاكر</th><th>إجراءات</th></tr></thead>
+        <thead><tr><th>{{ t('المحل') }}</th><th>{{ t('التواصل') }}</th><th>{{ t('الحالة') }}</th><th>{{ t('الباقة') }}</th><th>{{ t('ينتهي') }}</th><th>{{ t('تذاكر') }}</th><th>{{ t('إجراءات') }}</th></tr></thead>
         <tbody>
           <tr v-for="s in rows" :key="s.id">
             <td><b>{{ s.name }}</b><div class="muted">/s/{{ s.slug }}</div></td>
             <td><div>{{ s.owner_name || '—' }}</div><div class="muted" dir="ltr">{{ s.phone || '' }}</div></td>
-            <td><span class="pill" :class="stateCls(s.access_state)">{{ stateLabel(s.access_state) }}</span></td>
+            <td><span class="pill" :class="stateCls(s.access_state)">{{ t(stateLabel(s.access_state)) }}</span></td>
             <td>
               <select :value="s.plan_id || ''" @change="setPlan(s, $event.target.value)" class="mini">
                 <option value="">—</option>
@@ -70,16 +83,17 @@
             <td class="muted">{{ fmtDate(s.subscription_ends_at) }}</td>
             <td>{{ s.tickets_count }}</td>
             <td class="acts">
-              <button v-if="s.status === 'pending'" class="act g" title="اعتماد" @click="doApprove(s)"><i class="ti ti-check"></i></button>
-              <button v-if="s.status === 'pending'" class="act danger" title="رفض الطلب" @click="doReject(s)"><i class="ti ti-x"></i></button>
-              <button class="act" title="تجديد الاشتراك" @click="doRenew(s)"><i class="ti ti-refresh"></i></button>
-              <button v-if="s.status !== 'suspended'" class="act y" title="إيقاف" @click="doSuspend(s)"><i class="ti ti-ban"></i></button>
-              <button v-else class="act g" title="تفعيل" @click="doActivate(s)"><i class="ti ti-player-play"></i></button>
-              <a class="act" title="فتح الموقع" :href="'/s/' + s.slug" target="_blank"><i class="ti ti-external-link"></i></a>
-              <button class="act danger" title="حذف" @click="doDelete(s)"><i class="ti ti-trash"></i></button>
+              <button v-if="s.status === 'pending'" class="act g" :title="t('اعتماد')" @click="doApprove(s)"><i class="ti ti-check"></i></button>
+              <button v-if="s.status === 'pending'" class="act danger" :title="t('رفض الطلب')" @click="doReject(s)"><i class="ti ti-x"></i></button>
+              <button class="act" :title="t('تجديد الاشتراك')" @click="doRenew(s)"><i class="ti ti-refresh"></i></button>
+              <button v-if="s.status !== 'suspended'" class="act y" :title="t('إيقاف')" @click="doSuspend(s)"><i class="ti ti-ban"></i></button>
+              <button v-else class="act g" :title="t('تفعيل')" @click="doActivate(s)"><i class="ti ti-player-play"></i></button>
+              <button class="act" :title="t('المميزات')" @click="openFeatures(s)"><i class="ti ti-adjustments"></i></button>
+              <a class="act" :title="t('فتح الموقع')" :href="'/s/' + s.slug" target="_blank"><i class="ti ti-external-link"></i></a>
+              <button class="act danger" :title="t('حذف')" @click="doDelete(s)"><i class="ti ti-trash"></i></button>
             </td>
           </tr>
-          <tr v-if="!rows.length"><td colspan="7" class="empty">لا توجد محلات</td></tr>
+          <tr v-if="!rows.length"><td colspan="7" class="empty">{{ t('لا توجد محلات') }}</td></tr>
         </tbody>
       </table>
     </div>
@@ -88,6 +102,7 @@
 
 <script setup>
 const sa = useSuperAdmin()
+const { t } = useI18n()
 const st = ref({})
 const rows = ref([])
 const plansList = ref([])
@@ -97,6 +112,9 @@ const showAdd = ref(false)
 const busy = ref(false)
 const addErr = ref('')
 const nw = ref({ shop_name: '', owner_name: '', phone: '', email: '', password: '', plan_id: null })
+const featCatalog = ref({})
+const featShop = ref(null)
+const featSel = ref([])
 
 const pending = computed(() => rows.value.filter(s => s.status === 'pending'))
 
@@ -110,8 +128,8 @@ async function load() {
   if (q.value) params.q = q.value
   rows.value = await sa.shops(params)
 }
-let t = null
-function debouncedLoad() { clearTimeout(t); t = setTimeout(load, 300) }
+let debTimer = null
+function debouncedLoad() { clearTimeout(debTimer); debTimer = setTimeout(load, 300) }
 
 async function refreshStats() { st.value = await sa.stats() }
 
@@ -139,7 +157,22 @@ async function add() {
   finally { busy.value = false }
 }
 
+function openFeatures(s) {
+  featShop.value = s
+  featSel.value = Array.isArray(s.features) ? [...s.features] : []
+  showAdd.value = false
+}
+async function saveFeatures() {
+  busy.value = true
+  try {
+    await sa.updateShop(featShop.value.id, { features: featSel.value })
+    featShop.value = null
+    await load()
+  } finally { busy.value = false }
+}
+
 onMounted(async () => {
+  try { featCatalog.value = await sa.featureCatalog() } catch {}
   try { plansList.value = await sa.plans() } catch {}
   try { await refreshStats() } catch {}
   try { await load() } catch {}
@@ -185,5 +218,9 @@ th { font-size: 12px; color: var(--muted); font-weight: 700; }
 .req-acts { display: flex; gap: 8px; }
 .btn-accept { background: var(--green); color: #fff; }
 .btn-reject { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.feat-grid .tg { display: flex; align-items: center; gap: 9px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font-size: 14px; cursor: pointer; }
+.feat-grid .tg input { width: 17px; height: 17px; cursor: pointer; }
+@media (max-width: 800px) { .feat-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1000px) { .kpis { grid-template-columns: 1fr 1fr; } .arow { grid-template-columns: 1fr 1fr; } }
 </style>

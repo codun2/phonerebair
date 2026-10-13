@@ -2,6 +2,7 @@ export function useSuperAdmin() {
   const { api } = useApi()
 
   const stats = () => api('/super/stats')
+  const featureCatalog = () => api('/super/feature-catalog')
 
   const shops = (params: Record<string, string> = {}) => {
     const q = new URLSearchParams(params).toString()
@@ -21,7 +22,7 @@ export function useSuperAdmin() {
   const deletePlan = (id: number) => api(`/super/plans/${id}`, { method: 'DELETE' })
 
   return {
-    stats, shops, showShop, createShop, updateShop, approveShop, rejectShop, renewShop, deleteShop,
+    stats, featureCatalog, shops, showShop, createShop, updateShop, approveShop, rejectShop, renewShop, deleteShop,
     plans, createPlan, updatePlan, deletePlan,
   }
 }

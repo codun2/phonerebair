@@ -21,6 +21,7 @@ class SiteController extends Controller
             $map['shop_name'] = $shop->name;
             $map['slug'] = $shop->slug;
             $map['logo'] = $shop->logo_path;
+            $map['features'] = $shop->features ?? [];
         }
 
         return response()->json($map);

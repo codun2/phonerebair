@@ -11,7 +11,7 @@
     </div>
     <div class="right">
       <span v-if="settings.phone" class="phone"><i class="ti ti-phone"></i> {{ settings.phone }}</span>
-      <LangSwitch light />
+      <LangSwitch v-if="hasFeature('bilingual')" light />
       <NuxtLink to="/login" class="btn btn-accent"><i class="ti ti-lock"></i> {{ t('دخول لوحة التحكم') }}</NuxtLink>
     </div>
   </div>
@@ -19,7 +19,7 @@
 
 <script setup>
 const props = defineProps({ slug: { type: String, required: true } })
-const { settings, loadSettings, base } = useShop(props.slug)
+const { settings, loadSettings, base, hasFeature } = useShop(props.slug)
 const { t } = useI18n()
 onMounted(loadSettings)
 </script>
