@@ -38,6 +38,24 @@ Route::prefix('shops/{shopSlug}')->middleware('shop.slug')->group(function () {
 // ---- دخول ----
 Route::post('/login', [AuthController::class, 'login']);
 
+// ---- لوحة الإدارة العليا للمنصّة (super-admin) ----
+Route::prefix('super')->middleware(['auth:sanctum', 'super_admin'])->group(function () {
+    Route::get('/stats', [App\Http\Controllers\SuperAdminController::class, 'stats']);
+
+    Route::get('/shops', [App\Http\Controllers\SuperAdminController::class, 'shops']);
+    Route::post('/shops', [App\Http\Controllers\SuperAdminController::class, 'createShop']);
+    Route::get('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'showShop']);
+    Route::put('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'updateShop']);
+    Route::post('/shops/{id}/approve', [App\Http\Controllers\SuperAdminController::class, 'approveShop']);
+    Route::post('/shops/{id}/renew', [App\Http\Controllers\SuperAdminController::class, 'renewShop']);
+    Route::delete('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'destroyShop']);
+
+    Route::get('/plans', [App\Http\Controllers\SuperAdminController::class, 'plans']);
+    Route::post('/plans', [App\Http\Controllers\SuperAdminController::class, 'storePlan']);
+    Route::put('/plans/{id}', [App\Http\Controllers\SuperAdminController::class, 'updatePlan']);
+    Route::delete('/plans/{id}', [App\Http\Controllers\SuperAdminController::class, 'destroyPlan']);
+});
+
 // ---- لوحة إدارة المحل ----
 Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);

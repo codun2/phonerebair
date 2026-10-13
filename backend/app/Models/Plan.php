@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Plan extends Model
 {
@@ -19,5 +20,16 @@ class Plan extends Model
     public function shops()
     {
         return $this->hasMany(Shop::class);
+    }
+
+    public static function makeSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'plan';
+        $slug = $base;
+        $i = 1;
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . (++$i);
+        }
+        return $slug;
     }
 }
