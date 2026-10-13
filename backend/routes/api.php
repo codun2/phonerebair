@@ -47,6 +47,7 @@ Route::prefix('super')->middleware(['auth:sanctum', 'super_admin'])->group(funct
     Route::get('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'showShop']);
     Route::put('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'updateShop']);
     Route::post('/shops/{id}/approve', [App\Http\Controllers\SuperAdminController::class, 'approveShop']);
+    Route::post('/shops/{id}/reject', [App\Http\Controllers\SuperAdminController::class, 'rejectShop']);
     Route::post('/shops/{id}/renew', [App\Http\Controllers\SuperAdminController::class, 'renewShop']);
     Route::delete('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'destroyShop']);
 

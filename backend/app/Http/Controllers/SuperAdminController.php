@@ -74,6 +74,20 @@ class SuperAdminController extends Controller
         return response()->json(['message' => 'تم تفعيل المحل', 'shop' => $this->present($shop->fresh('plan'))]);
     }
 
+    /** رفض طلب تسجيل محل (قيد الانتظار فقط) — يحذف المحل وصاحبه. */
+    public function rejectShop(int $id)
+    {
+        $shop = Shop::findOrFail($id);
+        if ($shop->status !== 'pending') {
+            return response()->json(['message' => 'لا يمكن رفض محل مُفعَّل — استخدم الإيقاف أو الحذف'], 422);
+        }
+
+        User::where('shop_id', $shop->id)->delete();
+        $shop->delete();
+
+        return response()->json(['message' => 'تم رفض الطلب']);
+    }
+
     /** تعديل المحل: الحالة/الباقة/تاريخ الانتهاء/البيانات. */
     public function updateShop(Request $request, int $id)
     {
@@ -156,7 +170,9 @@ class SuperAdminController extends Controller
 
     public function destroyShop(int $id)
     {
-        Shop::findOrFail($id)->delete();
+        $shop = Shop::findOrFail($id);
+        User::where('shop_id', $shop->id)->delete();
+        $shop->delete();
 
         return response()->json(['message' => 'تم حذف المحل']);
     }

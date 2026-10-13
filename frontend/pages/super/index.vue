@@ -10,6 +10,22 @@
       <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-ticket"></i></div><div class="num">{{ st.tickets_total ?? '—' }}</div><div class="lbl">إجمالي التذاكر</div></div>
     </div>
 
+    <div v-if="pending.length" class="reqs">
+      <div class="reqs-h"><i class="ti ti-bell-ringing"></i> طلبات تسجيل جديدة بانتظار قرارك ({{ pending.length }})</div>
+      <div v-for="s in pending" :key="s.id" class="req">
+        <div class="req-info">
+          <b>{{ s.name }}</b>
+          <span class="muted">· {{ s.owner_name || '—' }}</span>
+          <span class="muted" dir="ltr">· {{ s.phone || '' }}</span>
+          <span class="muted" dir="ltr">· {{ s.email || '' }}</span>
+        </div>
+        <div class="req-acts">
+          <button class="btn btn-accept" @click="doApprove(s)"><i class="ti ti-check"></i> قبول</button>
+          <button class="btn btn-reject" @click="doReject(s)"><i class="ti ti-x"></i> رفض</button>
+        </div>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="ph">
         <h3>المحلات</h3>
@@ -55,6 +71,7 @@
             <td>{{ s.tickets_count }}</td>
             <td class="acts">
               <button v-if="s.status === 'pending'" class="act g" title="اعتماد" @click="doApprove(s)"><i class="ti ti-check"></i></button>
+              <button v-if="s.status === 'pending'" class="act danger" title="رفض الطلب" @click="doReject(s)"><i class="ti ti-x"></i></button>
               <button class="act" title="تجديد الاشتراك" @click="doRenew(s)"><i class="ti ti-refresh"></i></button>
               <button v-if="s.status !== 'suspended'" class="act y" title="إيقاف" @click="doSuspend(s)"><i class="ti ti-ban"></i></button>
               <button v-else class="act g" title="تفعيل" @click="doActivate(s)"><i class="ti ti-player-play"></i></button>
@@ -81,6 +98,8 @@ const busy = ref(false)
 const addErr = ref('')
 const nw = ref({ shop_name: '', owner_name: '', phone: '', email: '', password: '', plan_id: null })
 
+const pending = computed(() => rows.value.filter(s => s.status === 'pending'))
+
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'
 const stateLabel = (s) => ({ pending: 'بانتظار الموافقة', active: 'فعّال', suspended: 'موقوف', expired: 'منتهٍ' }[s] || s)
 const stateCls = (s) => ({ pending: 'pill-y', active: 'pill-g', suspended: 'pill-gray', expired: 'pill-r' }[s] || 'pill-gray')
@@ -98,9 +117,17 @@ async function refreshStats() { st.value = await sa.stats() }
 
 async function setPlan(s, planId) { await sa.updateShop(s.id, { plan_id: planId || null }); await load() }
 async function doApprove(s) { await sa.approveShop(s.id); await load(); await refreshStats() }
+async function doReject(s) {
+  if (!confirm(`رفض طلب "${s.name}" وحذفه نهائيًا؟`)) return
+  await sa.rejectShop(s.id); await load(); await refreshStats()
+}
 async function doRenew(s) { await sa.renewShop(s.id); await load() }
 async function doSuspend(s) { await sa.updateShop(s.id, { status: 'suspended' }); await load(); await refreshStats() }
 async function doActivate(s) { await sa.updateShop(s.id, { status: 'active' }); await load(); await refreshStats() }
+async function doReject(s) {
+  if (!confirm(`رفض طلب تسجيل "${s.name}"؟ سيُحذف الطلب نهائيًا.`)) return
+  await sa.rejectShop(s.id); await load(); await refreshStats()
+}
 async function doDelete(s) {
   if (!confirm(`حذف محل "${s.name}" وكل بياناته؟`)) return
   await sa.deleteShop(s.id); await load(); await refreshStats()
@@ -130,6 +157,13 @@ onMounted(async () => {
 .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
 .ic { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
 .num { font-size: 28px; font-weight: 800; } .lbl { color: var(--muted); font-size: 13px; }
+.reqs { background: #FFF8EC; border: 1px solid #F0D9A8; border-radius: 14px; padding: 16px 18px; margin-bottom: 18px; }
+.reqs-h { font-size: 14px; font-weight: 700; color: #92600A; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.req { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #F0E2C4; flex-wrap: wrap; }
+.req-info { font-size: 14px; } .req-info b { font-size: 15px; }
+.req-acts { display: flex; gap: 8px; }
+.btn-accept { background: var(--green); color: #fff; }
+.btn-reject { background: #fff; color: var(--accent); border: 1px solid #E7B9B6; }
 .panel { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
 .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
 .ph h3 { font-size: 15px; font-weight: 700; }

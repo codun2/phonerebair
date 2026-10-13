@@ -11,6 +11,7 @@ export function useSuperAdmin() {
   const createShop = (body: any) => api('/super/shops', { method: 'POST', body })
   const updateShop = (id: number, body: any) => api(`/super/shops/${id}`, { method: 'PUT', body })
   const approveShop = (id: number) => api(`/super/shops/${id}/approve`, { method: 'POST' })
+  const rejectShop = (id: number) => api(`/super/shops/${id}/reject`, { method: 'POST' })
   const renewShop = (id: number, body: any = {}) => api(`/super/shops/${id}/renew`, { method: 'POST', body })
   const deleteShop = (id: number) => api(`/super/shops/${id}`, { method: 'DELETE' })
 
@@ -20,7 +21,7 @@ export function useSuperAdmin() {
   const deletePlan = (id: number) => api(`/super/plans/${id}`, { method: 'DELETE' })
 
   return {
-    stats, shops, showShop, createShop, updateShop, approveShop, renewShop, deleteShop,
+    stats, shops, showShop, createShop, updateShop, approveShop, rejectShop, renewShop, deleteShop,
     plans, createPlan, updatePlan, deletePlan,
   }
 }
