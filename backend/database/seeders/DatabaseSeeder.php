@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         $shop = Shop::updateOrCreate(['slug' => 'main'], [
             'name' => 'موبايل فيكس', 'owner_name' => 'أحمد المدير',
             'phone' => '0599 000 000', 'status' => 'active', 'plan_id' => $basic->id,
+            'features' => array_keys(Shop::AVAILABLE_FEATURES),   // المحل التجريبي يحصل على كل المميزات
             'subscription_ends_at' => now()->addYears(5),
         ]);
 
