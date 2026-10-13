@@ -4,47 +4,47 @@
 
     <section class="hero">
       <div class="hero-in">
-        <span class="tag"><i class="ti ti-shield-check"></i> {{ settings.hero_badge || 'صيانة معتمدة · ضمان على كل تصليح' }}</span>
-        <h1>{{ settings.hero_title || 'جهازك بأمان — تصليح احترافي بنفس اليوم' }}</h1>
-        <p>{{ settings.hero_subtitle || 'اعرف سعر التصليح فوراً، احجز موعدك، وتابع حالة جهازك لحظة بلحظة.' }}</p>
+        <span class="tag"><i class="ti ti-shield-check"></i> {{ settings.hero_badge || t('صيانة معتمدة · ضمان على كل تصليح') }}</span>
+        <h1>{{ settings.hero_title || t('جهازك بأمان — تصليح احترافي بنفس اليوم') }}</h1>
+        <p>{{ settings.hero_subtitle || t('اعرف سعر التصليح فوراً، احجز موعدك، وتابع حالة جهازك لحظة بلحظة.') }}</p>
         <div class="cta">
-          <a href="#quote" class="btn btn-accent btn-lg"><i class="ti ti-calculator"></i> احسب سعر التصليح</a>
-          <a v-if="waLink" :href="waLink" target="_blank" class="btn btn-wa btn-lg"><i class="ti ti-brand-whatsapp"></i> تواصل واتساب</a>
+          <a href="#quote" class="btn btn-accent btn-lg"><i class="ti ti-calculator"></i> {{ t('احسب سعر التصليح') }}</a>
+          <a v-if="waLink" :href="waLink" target="_blank" class="btn btn-wa btn-lg"><i class="ti ti-brand-whatsapp"></i> {{ t('تواصل واتساب') }}</a>
         </div>
       </div>
     </section>
 
     <div v-if="show('quote')" class="quote-wrap" id="quote">
       <div class="quote panel">
-        <div class="sec-t"><i class="ti ti-calculator" style="color:var(--accent)"></i> حاسبة السعر الفوري</div>
-        <p class="page-sub" style="margin-bottom:16px">اختر جهازك ونوع العطل ليظهر السعر ومدة التصليح فوراً</p>
+        <div class="sec-t"><i class="ti ti-calculator" style="color:var(--accent)"></i> {{ t('حاسبة السعر الفوري') }}</div>
+        <p class="page-sub" style="margin-bottom:16px">{{ t('اختر جهازك ونوع العطل ليظهر السعر ومدة التصليح فوراً') }}</p>
         <div class="g3">
-          <div><label>الماركة</label>
+          <div><label>{{ t('الماركة') }}</label>
             <select v-model="sel.make" @change="onMake">
               <option v-for="m in catalog.makes" :key="m.id" :value="m">{{ m.name }}</option>
             </select>
           </div>
-          <div><label>الموديل</label>
+          <div><label>{{ t('الموديل') }}</label>
             <select v-model="sel.model" @change="calc">
               <option v-for="md in (sel.make?.models || [])" :key="md.id" :value="md">{{ md.name }}</option>
             </select>
           </div>
-          <div><label>نوع العطل</label>
+          <div><label>{{ t('نوع العطل') }}</label>
             <select v-model="sel.type" @change="calc">
-              <option v-for="t in catalog.repair_types" :key="t.id" :value="t">{{ t.name }}</option>
+              <option v-for="rt in catalog.repair_types" :key="rt.id" :value="rt">{{ rt.name }}</option>
             </select>
           </div>
         </div>
         <div class="result" :class="{ empty: !result?.found }">
           <template v-if="result?.found">
-            <div><div class="rl">السعر التقديري</div><div class="price">{{ fmt(result.price) }} <span>ر.س</span></div></div>
-            <div class="center"><div class="rl">مدة التصليح</div><div class="rv">{{ result.duration_minutes }} دقيقة</div></div>
-            <div class="center"><div class="rl">الضمان</div><div class="rv">{{ result.warranty_months }} أشهر</div></div>
+            <div><div class="rl">{{ t('السعر التقديري') }}</div><div class="price">{{ fmt(result.price) }} <span>{{ t('ر.س') }}</span></div></div>
+            <div class="center"><div class="rl">{{ t('مدة التصليح') }}</div><div class="rv">{{ result.duration_minutes }} {{ t('دقيقة') }}</div></div>
+            <div class="center"><div class="rl">{{ t('الضمان') }}</div><div class="rv">{{ result.warranty_months }} {{ t('أشهر') }}</div></div>
             <div class="spacer"></div>
-            <NuxtLink :to="base + '/book'" class="btn btn-accent btn-lg">احجز التصليح ←</NuxtLink>
+            <NuxtLink :to="base + '/book'" class="btn btn-accent btn-lg">{{ t('احجز التصليح ←') }}</NuxtLink>
           </template>
           <template v-else>
-            <span style="color:var(--muted)"><i class="ti ti-info-circle"></i> {{ result?.message || 'اختر الماركة والموديل ونوع العطل' }}</span>
+            <span style="color:var(--muted)"><i class="ti ti-info-circle"></i> {{ result?.message || t('اختر الماركة والموديل ونوع العطل') }}</span>
           </template>
         </div>
       </div>
@@ -52,8 +52,8 @@
 
     <section v-if="show('services')" class="sec" id="services">
       <div class="wrap">
-        <h2 class="center">خدماتنا</h2>
-        <p class="page-sub center">نصلّح كل أعطال الجوالات بقطع أصلية وضمان</p>
+        <h2 class="center">{{ t('خدماتنا') }}</h2>
+        <p class="page-sub center">{{ t('نصلّح كل أعطال الجوالات بقطع أصلية وضمان') }}</p>
         <div class="svc-grid">
           <div v-for="s in catalog.repair_types" :key="s.id" class="svc">
             <div class="ic"><i :class="'ti ' + (s.icon || 'ti-tool')"></i></div>
@@ -65,14 +65,14 @@
 
     <section v-if="show('why')" class="sec why">
       <div class="wrap">
-        <h2 class="center">ليش تختارنا؟</h2>
+        <h2 class="center">{{ t('ليش تختارنا؟') }}</h2>
         <div class="why-grid">
-          <div class="why-item"><div class="ic"><i class="ti ti-clock-bolt"></i></div><div><h4>تصليح سريع</h4><p>أغلب التصليحات تخلص بنفس اليوم.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-shield-check"></i></div><div><h4>ضمان مكتوب</h4><p>ضمان حتى ٦ أشهر على القطع والصيانة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-eye"></i></div><div><h4>شفافية كاملة</h4><p>تعرف السعر قبل التصليح وتتابع الحالة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-certificate"></i></div><div><h4>فنيون معتمدون</h4><p>فريق متخصص بكل أنواع الأجهزة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-cpu"></i></div><div><h4>قطع أصلية</h4><p>نستخدم قطع أصلية بمصدر موثوق.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-message-2"></i></div><div><h4>تحديثات فورية</h4><p>رسائل واتساب بكل خطوة.</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-clock-bolt"></i></div><div><h4>{{ t('تصليح سريع') }}</h4><p>{{ t('أغلب التصليحات تخلص بنفس اليوم.') }}</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-shield-check"></i></div><div><h4>{{ t('ضمان مكتوب') }}</h4><p>{{ t('ضمان حتى ٦ أشهر على القطع والصيانة.') }}</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-eye"></i></div><div><h4>{{ t('شفافية كاملة') }}</h4><p>{{ t('تعرف السعر قبل التصليح وتتابع الحالة.') }}</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-certificate"></i></div><div><h4>{{ t('فنيون معتمدون') }}</h4><p>{{ t('فريق متخصص بكل أنواع الأجهزة.') }}</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-cpu"></i></div><div><h4>{{ t('قطع أصلية') }}</h4><p>{{ t('نستخدم قطع أصلية بمصدر موثوق.') }}</p></div></div>
+          <div class="why-item"><div class="ic"><i class="ti ti-message-2"></i></div><div><h4>{{ t('تحديثات فورية') }}</h4><p>{{ t('رسائل واتساب بكل خطوة.') }}</p></div></div>
         </div>
       </div>
     </section>
@@ -80,11 +80,11 @@
     <section v-if="show('track_cta')" class="sec" style="padding-top:0">
       <div class="wrap">
         <div class="track-cta">
-          <h2>{{ settings.cta_title || 'تابع حالة تصليحك' }}</h2>
-          <p>{{ settings.cta_text || 'أدخل رقم التذكرة أو رقم جوالك وشوف وين وصل جهازك' }}</p>
+          <h2>{{ settings.cta_title || t('تابع حالة تصليحك') }}</h2>
+          <p>{{ settings.cta_text || t('أدخل رقم التذكرة أو رقم جوالك وشوف وين وصل جهازك') }}</p>
           <div class="track-in">
             <input v-model="trackQ" placeholder="RX-10248" @keyup.enter="goTrack" />
-            <button class="btn btn-lg" style="background:#fff;color:var(--accent-d)" @click="goTrack">تتبّع</button>
+            <button class="btn btn-lg" style="background:#fff;color:var(--accent-d)" @click="goTrack">{{ t('تتبّع') }}</button>
           </div>
         </div>
       </div>
@@ -99,13 +99,14 @@ const route = useRoute()
 const slug = route.params.slug
 const { shopApi } = useApi()
 const { settings, loadSettings, waLink, base, themeVars, show } = useShop(slug)
+const { t, isEn } = useI18n()
 
 const catalog = ref({ makes: [], repair_types: [] })
 const sel = ref({ make: null, model: null, type: null })
 const result = ref(null)
 const trackQ = ref('')
 
-const fmt = (n) => Number(n).toLocaleString('ar-EG')
+const fmt = (n) => Number(n).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
 
 function onMake() { sel.value.model = sel.value.make?.models?.[0] || null; calc() }
 

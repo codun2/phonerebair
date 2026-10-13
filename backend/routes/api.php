@@ -41,6 +41,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // ---- لوحة الإدارة العليا للمنصّة (super-admin) ----
 Route::prefix('super')->middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::get('/stats', [App\Http\Controllers\SuperAdminController::class, 'stats']);
+    Route::get('/feature-catalog', [App\Http\Controllers\SuperAdminController::class, 'featureCatalog']);
 
     Route::get('/shops', [App\Http\Controllers\SuperAdminController::class, 'shops']);
     Route::post('/shops', [App\Http\Controllers\SuperAdminController::class, 'createShop']);

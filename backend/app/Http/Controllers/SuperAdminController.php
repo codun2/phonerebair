@@ -101,6 +101,8 @@ class SuperAdminController extends Controller
             'status' => 'sometimes|in:pending,active,suspended',
             'plan_id' => 'sometimes|nullable|exists:plans,id',
             'subscription_ends_at' => 'sometimes|nullable|date',
+            'features' => 'sometimes|array',
+            'features.*' => 'string|in:' . implode(',', array_keys(Shop::AVAILABLE_FEATURES)),
         ]);
 
         $shop->fill($data);
@@ -226,6 +228,12 @@ class SuperAdminController extends Controller
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ]);
+    }
+
+    /** قائمة المميزات المتاحة على المنصّة (key => اسم معروض). */
+    public function featureCatalog()
+    {
+        return response()->json(Shop::AVAILABLE_FEATURES);
     }
 
     private function applyPlanPeriod(Shop $shop, ?Plan $plan): void

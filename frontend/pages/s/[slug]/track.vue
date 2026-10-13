@@ -2,38 +2,38 @@
   <div :style="themeVars">
     <SiteHeader :slug="slug" />
     <section class="phead">
-      <h1 class="page-title" style="color:#fff">تتبّع حالة التصليح</h1>
-      <p style="color:#B5D4F4">أدخل رقم التذكرة أو رقم جوالك لمعرفة آخر تحديث</p>
+      <h1 class="page-title" style="color:#fff">{{ t('تتبّع حالة التصليح') }}</h1>
+      <p style="color:#B5D4F4">{{ t('أدخل رقم التذكرة أو رقم جوالك لمعرفة آخر تحديث') }}</p>
     </section>
 
     <div class="box">
       <div class="panel">
         <div style="display:flex;gap:10px">
           <input v-model="q" placeholder="RX-10248" @keyup.enter="run" />
-          <button class="btn btn-accent" :disabled="loading" @click="run"><i class="ti ti-search"></i> تتبّع</button>
+          <button class="btn btn-accent" :disabled="loading" @click="run"><i class="ti ti-search"></i> {{ t('تتبّع') }}</button>
         </div>
 
         <div v-if="err" class="err" style="margin-top:16px">{{ err }}</div>
 
         <div v-if="ticket" style="margin-top:24px">
           <div class="tk-head">
-            <div><div class="muted">التذكرة</div><b style="color:var(--accent-d)">{{ ticket.ticket_no }}</b></div>
-            <div><div class="muted">الجهاز</div><b>{{ ticket.device }}</b></div>
-            <div><div class="muted">العطل</div><b>{{ ticket.repair_type || '—' }}</b></div>
-            <span class="pill" :class="pillClass(ticket.status)">{{ ticket.status_label }}</span>
+            <div><div class="muted">{{ t('التذكرة') }}</div><b style="color:var(--accent-d)">{{ ticket.ticket_no }}</b></div>
+            <div><div class="muted">{{ t('الجهاز') }}</div><b>{{ ticket.device }}</b></div>
+            <div><div class="muted">{{ t('العطل') }}</div><b>{{ ticket.repair_type || '—' }}</b></div>
+            <span class="pill" :class="pillClass(ticket.status)">{{ t(ticket.status_label) }}</span>
           </div>
 
           <div class="tl">
             <template v-for="(s, i) in statuses" :key="s.key">
               <div class="step" :class="stepState(s.key)">
                 <span class="dot"><i :class="'ti ' + stepIcon(s.key)"></i></span>
-                <div class="lab">{{ s.label }}</div>
+                <div class="lab">{{ t(s.label) }}</div>
               </div>
               <div v-if="i < statuses.length - 1" class="line" :class="lineState(i)"></div>
             </template>
           </div>
 
-          <div v-if="lastNote" class="note"><i class="ti ti-info-circle"></i> آخر تحديث: {{ lastNote }}</div>
+          <div v-if="lastNote" class="note"><i class="ti ti-info-circle"></i> {{ t('آخر تحديث:') }} {{ lastNote }}</div>
         </div>
       </div>
     </div>
@@ -46,6 +46,7 @@ const route = useRoute()
 const slug = route.params.slug
 const { shopApi } = useApi()
 const { themeVars, loadSettings } = useShop(slug)
+const { t } = useI18n()
 const q = ref(route.query.q || '')
 const ticket = ref(null)
 const statuses = ref([])
@@ -78,7 +79,7 @@ async function run() {
     statuses.value = r.statuses
   } catch (e) {
     ticket.value = null
-    err.value = 'لم نجد تذكرة بهذا الرقم — تأكد من الرقم وحاول مجدداً'
+    err.value = t('لم نجد تذكرة بهذا الرقم — تأكد من الرقم وحاول مجدداً')
   } finally { loading.value = false }
 }
 

@@ -90,6 +90,7 @@ const DICT: Record<string, string> = {
   'أدخل بيانات حسابك': 'Enter your account details',
   'بيانات الدخول غير صحيحة': 'Invalid login credentials',
   '٦ أحرف على الأقل': 'At least 6 characters',
+  'تجريبي:': 'Demo:',
 
   // ===== الموقع العام للمحل =====
   'الرئيسية': 'Home',
@@ -150,6 +151,13 @@ const DICT: Record<string, string> = {
   'العطل': 'Issue',
   'لم نجد تذكرة بهذا الرقم — تأكد من الرقم وحاول مجدداً': 'No ticket found — check the number and try again',
   'آخر تحديث:': 'Last update:',
+  'محل الصيانة': 'Repair shop',
+  'مركز صيانة جوالات معتمد — تصليح احترافي بقطع أصلية وضمان على كل خدمة.': 'Certified phone repair center — professional repair with genuine parts and warranty on every service.',
+  'روابط': 'Links',
+  'تواصل': 'Contact',
+  'واتساب': 'WhatsApp',
+  'كل الحقوق محفوظة': 'All rights reserved',
+  'دخول لوحة التحكم': 'Dashboard login',
 
   // ===== حالات التذكرة =====
   'مُستلم': 'Received',

@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => \App\Http\Middleware\SetTenant::class,
             'shop.slug' => \App\Http\Middleware\ResolveShopFromSlug::class,
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+            'feature' => \App\Http\Middleware\EnsureFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

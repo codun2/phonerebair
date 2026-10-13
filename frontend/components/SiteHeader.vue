@@ -5,13 +5,14 @@
       <div><div class="bt">{{ settings.shop_name || 'محل الصيانة' }}</div><div class="bs">MOBILE FIX</div></div>
     </NuxtLink>
     <div class="links">
-      <NuxtLink :to="base">الرئيسية</NuxtLink>
-      <NuxtLink :to="base + '/book'">احجز تصليح</NuxtLink>
-      <NuxtLink :to="base + '/track'">تتبّع طلبك</NuxtLink>
+      <NuxtLink :to="base">{{ t('الرئيسية') }}</NuxtLink>
+      <NuxtLink :to="base + '/book'">{{ t('احجز تصليح') }}</NuxtLink>
+      <NuxtLink :to="base + '/track'">{{ t('تتبّع طلبك') }}</NuxtLink>
     </div>
     <div class="right">
       <span v-if="settings.phone" class="phone"><i class="ti ti-phone"></i> {{ settings.phone }}</span>
-      <NuxtLink to="/login" class="btn btn-accent"><i class="ti ti-lock"></i> دخول لوحة التحكم</NuxtLink>
+      <LangSwitch light />
+      <NuxtLink to="/login" class="btn btn-accent"><i class="ti ti-lock"></i> {{ t('دخول لوحة التحكم') }}</NuxtLink>
     </div>
   </div>
 </template>
@@ -19,6 +20,7 @@
 <script setup>
 const props = defineProps({ slug: { type: String, required: true } })
 const { settings, loadSettings, base } = useShop(props.slug)
+const { t } = useI18n()
 onMounted(loadSettings)
 </script>
 

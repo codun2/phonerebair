@@ -9,13 +9,26 @@ class Shop extends Model
 {
     protected $fillable = [
         'name', 'slug', 'owner_name', 'phone', 'email', 'address', 'logo_path',
-        'status', 'plan_id', 'trial_ends_at', 'subscription_ends_at',
+        'status', 'plan_id', 'features', 'trial_ends_at', 'subscription_ends_at',
     ];
 
     protected $casts = [
+        'features' => 'array',
         'trial_ends_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];
+
+    /** المميزات المتاحة على المنصّة (key => اسم معروض). قابلة للتوسّع. */
+    public const AVAILABLE_FEATURES = [
+        'inventory' => 'صفحة المخزون',
+        'bilingual' => 'دعم لغتين (عربي/إنجليزي)',
+        'reports' => 'التقارير',
+    ];
+
+    public function hasFeature(string $key): bool
+    {
+        return in_array($key, $this->features ?? [], true);
+    }
 
     public function plan()
     {

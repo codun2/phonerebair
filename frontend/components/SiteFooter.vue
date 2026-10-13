@@ -2,29 +2,30 @@
   <footer class="footer">
     <div class="fcols">
       <div>
-        <div class="brand"><div class="logo"><i class="ti ti-device-mobile"></i></div><b>{{ settings.shop_name || 'محل الصيانة' }}</b></div>
-        <p class="about">{{ settings.about || 'مركز صيانة جوالات معتمد — تصليح احترافي بقطع أصلية وضمان على كل خدمة.' }}</p>
+        <div class="brand"><div class="logo"><i class="ti ti-device-mobile"></i></div><b>{{ settings.shop_name || t('محل الصيانة') }}</b></div>
+        <p class="about">{{ settings.about || t('مركز صيانة جوالات معتمد — تصليح احترافي بقطع أصلية وضمان على كل خدمة.') }}</p>
       </div>
       <div>
-        <h5>روابط</h5>
-        <NuxtLink :to="base + '/book'">احجز تصليح</NuxtLink>
-        <NuxtLink :to="base + '/track'">تتبّع طلبك</NuxtLink>
+        <h5>{{ t('روابط') }}</h5>
+        <NuxtLink :to="base + '/book'">{{ t('احجز تصليح') }}</NuxtLink>
+        <NuxtLink :to="base + '/track'">{{ t('تتبّع طلبك') }}</NuxtLink>
       </div>
       <div>
-        <h5>تواصل</h5>
+        <h5>{{ t('تواصل') }}</h5>
         <p v-if="settings.phone"><i class="ti ti-phone"></i> {{ settings.phone }}</p>
-        <a v-if="waLink" :href="waLink" target="_blank"><i class="ti ti-brand-whatsapp"></i> واتساب</a>
+        <a v-if="waLink" :href="waLink" target="_blank"><i class="ti ti-brand-whatsapp"></i> {{ t('واتساب') }}</a>
         <p v-if="settings.address"><i class="ti ti-map-pin"></i> {{ settings.address }}</p>
         <p v-if="settings.hours"><i class="ti ti-clock"></i> {{ settings.hours }}</p>
       </div>
     </div>
-    <div class="fbottom"><span>© 2026 {{ settings.shop_name || 'محل الصيانة' }} — كل الحقوق محفوظة</span></div>
+    <div class="fbottom"><span>© 2026 {{ settings.shop_name || t('محل الصيانة') }} — {{ t('كل الحقوق محفوظة') }}</span></div>
   </footer>
 </template>
 
 <script setup>
 const props = defineProps({ slug: { type: String, required: true } })
 const { settings, loadSettings, waLink, base } = useShop(props.slug)
+const { t } = useI18n()
 onMounted(loadSettings)
 </script>
 
