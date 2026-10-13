@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToShop;
 
 class PriceRule extends Model
 {
-    protected $fillable = [
+    use BelongsToShop;
+
+    protected $fillable = ['shop_id', 
         'make_id', 'car_model_id', 'repair_type_id',
         'price', 'duration_minutes', 'warranty_months',
     ];

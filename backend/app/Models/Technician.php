@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToShop;
 
 class Technician extends Model
 {
-    protected $fillable = ['name', 'phone', 'specialty', 'active'];
+    use BelongsToShop;
+
+    protected $fillable = ['shop_id', 'name', 'phone', 'specialty', 'active'];
 
     protected $casts = ['active' => 'boolean'];
 
