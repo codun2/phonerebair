@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SiteHeader />
+    <SiteHeader :slug="slug" />
     <section class="phead">
       <h1 class="page-title" style="color:#fff">تتبّع حالة التصليح</h1>
       <p style="color:#B5D4F4">أدخل رقم التذكرة أو رقم جوالك لمعرفة آخر تحديث</p>
@@ -23,7 +23,6 @@
             <span class="pill" :class="pillClass(ticket.status)">{{ ticket.status_label }}</span>
           </div>
 
-          <!-- timeline -->
           <div class="tl">
             <template v-for="(s, i) in statuses" :key="s.key">
               <div class="step" :class="stepState(s.key)">
@@ -38,13 +37,14 @@
         </div>
       </div>
     </div>
-    <SiteFooter />
+    <SiteFooter :slug="slug" />
   </div>
 </template>
 
 <script setup>
-const { api } = useApi()
 const route = useRoute()
+const slug = route.params.slug
+const { shopApi } = useApi()
 const q = ref(route.query.q || '')
 const ticket = ref(null)
 const statuses = ref([])
@@ -72,7 +72,7 @@ async function run() {
   if (!q.value) return
   loading.value = true; err.value = ''
   try {
-    const r = await api('/site/track', { method: 'POST', body: { q: q.value } })
+    const r = await shopApi(slug, '/track', { method: 'POST', body: { q: q.value } })
     ticket.value = r.ticket
     statuses.value = r.statuses
   } catch (e) {

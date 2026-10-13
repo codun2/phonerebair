@@ -2,13 +2,13 @@
   <footer class="footer">
     <div class="fcols">
       <div>
-        <div class="brand"><div class="logo"><i class="ti ti-device-mobile"></i></div><b>{{ settings.shop_name || 'موبايل فيكس' }}</b></div>
+        <div class="brand"><div class="logo"><i class="ti ti-device-mobile"></i></div><b>{{ settings.shop_name || 'محل الصيانة' }}</b></div>
         <p class="about">{{ settings.about || 'مركز صيانة جوالات معتمد — تصليح احترافي بقطع أصلية وضمان على كل خدمة.' }}</p>
       </div>
       <div>
         <h5>روابط</h5>
-        <NuxtLink to="/book">احجز تصليح</NuxtLink>
-        <NuxtLink to="/track">تتبّع طلبك</NuxtLink>
+        <NuxtLink :to="base + '/book'">احجز تصليح</NuxtLink>
+        <NuxtLink :to="base + '/track'">تتبّع طلبك</NuxtLink>
       </div>
       <div>
         <h5>تواصل</h5>
@@ -18,12 +18,13 @@
         <p v-if="settings.hours"><i class="ti ti-clock"></i> {{ settings.hours }}</p>
       </div>
     </div>
-    <div class="fbottom"><span>© 2026 {{ settings.shop_name || 'موبايل فيكس' }} — كل الحقوق محفوظة</span></div>
+    <div class="fbottom"><span>© 2026 {{ settings.shop_name || 'محل الصيانة' }} — كل الحقوق محفوظة</span></div>
   </footer>
 </template>
 
 <script setup>
-const { settings, loadSettings, waLink } = useSettings()
+const props = defineProps({ slug: { type: String, required: true } })
+const { settings, loadSettings, waLink, base } = useShop(props.slug)
 onMounted(loadSettings)
 </script>
 
