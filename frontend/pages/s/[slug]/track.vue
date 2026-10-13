@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="themeVars">
     <SiteHeader :slug="slug" />
     <section class="phead">
       <h1 class="page-title" style="color:#fff">تتبّع حالة التصليح</h1>
@@ -45,6 +45,7 @@
 const route = useRoute()
 const slug = route.params.slug
 const { shopApi } = useApi()
+const { themeVars, loadSettings } = useShop(slug)
 const q = ref(route.query.q || '')
 const ticket = ref(null)
 const statuses = ref([])
@@ -81,7 +82,7 @@ async function run() {
   } finally { loading.value = false }
 }
 
-onMounted(() => { if (q.value) run() })
+onMounted(() => { loadSettings(); if (q.value) run() })
 </script>
 
 <style scoped>

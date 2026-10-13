@@ -338,11 +338,21 @@ class DashboardController extends Controller
         'shop_name', 'phone', 'whatsapp', 'address', 'hours', 'about',
         'hero_badge', 'hero_title', 'hero_subtitle',
         'cta_title', 'cta_text', 'footer_text',
+        // المظهر: اللون الأساسي + إظهار/إخفاء أقسام الصفحة الرئيسية
+        'theme_primary',
+        'show_quote', 'show_services', 'show_why', 'show_track_cta',
     ];
 
     public function getSettings()
     {
-        return response()->json(Setting::all_map());
+        $map = Setting::all_map();
+        $shop = request()->user()?->shop;
+        if ($shop) {
+            $map['slug'] = $shop->slug;
+            $map['shop_name'] = $map['shop_name'] ?? $shop->name;
+        }
+
+        return response()->json($map);
     }
 
     public function saveSettings(Request $request)

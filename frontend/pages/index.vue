@@ -6,73 +6,74 @@
         <div><div class="bt">فيكس بلس</div><div class="bs">FIX PLUS</div></div>
       </div>
       <div class="right">
-        <NuxtLink to="/login" class="ghost">دخول</NuxtLink>
-        <NuxtLink to="/register" class="btn btn-accent"><i class="ti ti-rocket"></i> سجّل محلك</NuxtLink>
+        <LangSwitch light />
+        <NuxtLink to="/login" class="ghost">{{ t('دخول') }}</NuxtLink>
+        <NuxtLink to="/register" class="btn btn-accent"><i class="ti ti-rocket"></i> {{ t('سجّل محلك') }}</NuxtLink>
       </div>
     </header>
 
     <section class="hero">
       <div class="hero-in">
-        <span class="tag"><i class="ti ti-sparkles"></i> نظام متكامل لإدارة محلات صيانة الجوالات</span>
-        <h1>أدِر محل صيانة جوالاتك باحتراف — من مكان واحد</h1>
-        <p>تذاكر تصليح، حاسبة أسعار فورية، حجوزات أونلاين، تتبّع للزبائن، مخزون، وفريق — كل شي بنظام واحد سهل.</p>
+        <span class="tag"><i class="ti ti-sparkles"></i> {{ t('نظام متكامل لإدارة محلات صيانة الجوالات') }}</span>
+        <h1>{{ t('أدِر محل صيانة جوالاتك باحتراف — من مكان واحد') }}</h1>
+        <p>{{ t('تذاكر تصليح، حاسبة أسعار فورية، حجوزات أونلاين، تتبّع للزبائن، مخزون، وفريق — كل شي بنظام واحد سهل.') }}</p>
         <div class="cta">
-          <NuxtLink to="/register" class="btn btn-accent btn-lg"><i class="ti ti-rocket"></i> ابدأ الآن مجانًا</NuxtLink>
-          <a href="#plans" class="btn btn-ghost btn-lg">شوف الباقات</a>
+          <NuxtLink to="/register" class="btn btn-accent btn-lg"><i class="ti ti-rocket"></i> {{ t('ابدأ الآن مجانًا') }}</NuxtLink>
+          <a href="#plans" class="btn btn-ghost btn-lg">{{ t('شوف الباقات') }}</a>
         </div>
-        <div class="trust"><i class="ti ti-circle-check"></i> تفعيل خلال دقائق · <i class="ti ti-circle-check"></i> موقع حجز خاص بمحلك · <i class="ti ti-circle-check"></i> دعم بالعربي</div>
+        <div class="trust"><i class="ti ti-circle-check"></i> {{ t('تفعيل خلال دقائق') }} · <i class="ti ti-circle-check"></i> {{ t('موقع حجز خاص بمحلك') }} · <i class="ti ti-circle-check"></i> {{ t('دعم بالعربي') }}</div>
       </div>
     </section>
 
     <section class="sec">
       <div class="wrap">
-        <h2 class="center">كل اللي يحتاجه محلك</h2>
-        <p class="sub center">مصمَّم خصيصًا لمحلات صيانة الجوالات</p>
+        <h2 class="center">{{ t('كل اللي يحتاجه محلك') }}</h2>
+        <p class="sub center">{{ t('مصمَّم خصيصًا لمحلات صيانة الجوالات') }}</p>
         <div class="feats">
-          <div class="feat"><div class="ic"><i class="ti ti-ticket"></i></div><h4>نظام تذاكر</h4><p>استقبل الأجهزة، عيّن الفني، وتابع الحالة من الاستلام للتسليم.</p></div>
-          <div class="feat"><div class="ic"><i class="ti ti-calculator"></i></div><h4>حاسبة أسعار فورية</h4><p>الزبون يعرف سعر التصليح والمدة قبل لا يجي المحل.</p></div>
-          <div class="feat"><div class="ic"><i class="ti ti-calendar-check"></i></div><h4>حجوزات أونلاين</h4><p>موقع حجز خاص بمحلك يستقبل الطلبات ٢٤ ساعة.</p></div>
-          <div class="feat"><div class="ic"><i class="ti ti-map-pin-search"></i></div><h4>تتبّع للزبون</h4><p>الزبون يتابع حالة جهازه برقم التذكرة لحظة بلحظة.</p></div>
-          <div class="feat"><div class="ic"><i class="ti ti-packages"></i></div><h4>إدارة المخزون</h4><p>تابع قطع الغيار وتنبيهات النفاد تلقائيًا.</p></div>
-          <div class="feat"><div class="ic"><i class="ti ti-users"></i></div><h4>فريق وفنيون</h4><p>وزّع التذاكر على الفنيين وتابع أداءهم.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-ticket"></i></div><h4>{{ t('نظام تذاكر') }}</h4><p>{{ t('استقبل الأجهزة، عيّن الفني، وتابع الحالة من الاستلام للتسليم.') }}</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-calculator"></i></div><h4>{{ t('حاسبة أسعار فورية') }}</h4><p>{{ t('الزبون يعرف سعر التصليح والمدة قبل لا يجي المحل.') }}</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-calendar-check"></i></div><h4>{{ t('حجوزات أونلاين') }}</h4><p>{{ t('موقع حجز خاص بمحلك يستقبل الطلبات ٢٤ ساعة.') }}</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-map-pin-search"></i></div><h4>{{ t('تتبّع للزبون') }}</h4><p>{{ t('الزبون يتابع حالة جهازه برقم التذكرة لحظة بلحظة.') }}</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-packages"></i></div><h4>{{ t('إدارة المخزون') }}</h4><p>{{ t('تابع قطع الغيار وتنبيهات النفاد تلقائيًا.') }}</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-users"></i></div><h4>{{ t('فريق وفنيون') }}</h4><p>{{ t('وزّع التذاكر على الفنيين وتابع أداءهم.') }}</p></div>
         </div>
       </div>
     </section>
 
     <section class="sec plans" id="plans">
       <div class="wrap">
-        <h2 class="center">باقات بسيطة وواضحة</h2>
-        <p class="sub center">اختر الباقة المناسبة لمحلك — فعّلها وابدأ فورًا</p>
+        <h2 class="center">{{ t('باقات بسيطة وواضحة') }}</h2>
+        <p class="sub center">{{ t('اختر الباقة المناسبة لمحلك — فعّلها وابدأ فورًا') }}</p>
         <div class="plan-grid">
           <div v-for="(p, i) in plans" :key="p.id" class="plan" :class="{ pop: i === 1 }">
-            <div v-if="i === 1" class="badge">الأكثر طلبًا</div>
+            <div v-if="i === 1" class="badge">{{ t('الأكثر طلبًا') }}</div>
             <h3>{{ p.name }}</h3>
-            <div class="price">{{ Number(p.price).toLocaleString('ar-EG') }} <span>ر.س / {{ p.duration_days }} يوم</span></div>
+            <div class="price">{{ Number(p.price).toLocaleString(isEn ? 'en-US' : 'ar-EG') }} <span>{{ t('ر.س') }} / {{ p.duration_days }} {{ t('يوم') }}</span></div>
             <p class="pdesc">{{ p.description || '' }}</p>
             <ul>
-              <li><i class="ti ti-check"></i> تذاكر وحجوزات غير محدودة</li>
-              <li><i class="ti ti-check"></i> {{ p.max_technicians ? p.max_technicians + ' فنيين' : 'فنيون غير محدودين' }}</li>
-              <li><i class="ti ti-check"></i> موقع حجز وتتبّع خاص بمحلك</li>
+              <li><i class="ti ti-check"></i> {{ t('تذاكر وحجوزات غير محدودة') }}</li>
+              <li><i class="ti ti-check"></i> {{ p.max_technicians ? p.max_technicians + ' ' + t('فنيين') : t('فنيون غير محدودين') }}</li>
+              <li><i class="ti ti-check"></i> {{ t('موقع حجز وتتبّع خاص بمحلك') }}</li>
             </ul>
-            <NuxtLink to="/register" class="btn btn-block" :class="i === 1 ? 'btn-accent' : 'btn-ghost'">اختر الباقة</NuxtLink>
+            <NuxtLink to="/register" class="btn btn-block" :class="i === 1 ? 'btn-accent' : 'btn-ghost'">{{ t('اختر الباقة') }}</NuxtLink>
           </div>
-          <div v-if="!plans.length" class="center" style="grid-column:1/-1;color:var(--muted)">سيتم عرض الباقات قريبًا</div>
+          <div v-if="!plans.length" class="center" style="grid-column:1/-1;color:var(--muted)">{{ t('سيتم عرض الباقات قريبًا') }}</div>
         </div>
       </div>
     </section>
 
     <section class="cta-band">
       <div class="wrap center">
-        <h2 style="color:#fff">جاهز تطوّر محلك؟</h2>
-        <p>سجّل محلك اليوم وابدأ باستقبال الحجوزات خلال دقائق.</p>
-        <NuxtLink to="/register" class="btn btn-lg" style="background:#fff;color:var(--accent-d)"><i class="ti ti-rocket"></i> سجّل محلك الآن</NuxtLink>
+        <h2 style="color:#fff">{{ t('جاهز تطوّر محلك؟') }}</h2>
+        <p>{{ t('سجّل محلك اليوم وابدأ باستقبال الحجوزات خلال دقائق.') }}</p>
+        <NuxtLink to="/register" class="btn btn-lg" style="background:#fff;color:var(--accent-d)"><i class="ti ti-rocket"></i> {{ t('سجّل محلك الآن') }}</NuxtLink>
       </div>
     </section>
 
     <footer class="foot">
       <div class="wrap fin">
         <div class="brand"><div class="logo sm"><i class="ti ti-device-mobile"></i></div><b style="color:#fff">فيكس بلس</b></div>
-        <span>© 2026 فيكس بلس — نظام إدارة محلات صيانة الجوالات</span>
+        <span>© 2026 فيكس بلس — {{ t('نظام إدارة محلات صيانة الجوالات') }}</span>
       </div>
     </footer>
   </div>
@@ -80,6 +81,7 @@
 
 <script setup>
 const { api } = useApi()
+const { t, isEn } = useI18n()
 const plans = ref([])
 onMounted(async () => { try { plans.value = await api('/plans') } catch {} })
 </script>

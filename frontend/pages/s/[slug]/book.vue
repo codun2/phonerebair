@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="themeVars">
     <SiteHeader :slug="slug" />
     <section class="phead">
       <h1 class="page-title" style="color:#fff">احجز موعد تصليح</h1>
@@ -58,7 +58,8 @@
 const route = useRoute()
 const slug = route.params.slug
 const { shopApi } = useApi()
-const { base } = useShop(slug)
+const { base, themeVars, loadSettings } = useShop(slug)
+onMounted(loadSettings)
 const catalog = ref({ makes: [], repair_types: [] })
 const f = ref({ name: '', phone: '', make: '', repair_type: '', service_type: 'visit', preferred_time: 'اليوم مساءً', note: '' })
 const done = ref(false)

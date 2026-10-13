@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="themeVars">
     <SiteHeader :slug="slug" />
 
     <section class="hero">
@@ -14,7 +14,7 @@
       </div>
     </section>
 
-    <div class="quote-wrap" id="quote">
+    <div v-if="show('quote')" class="quote-wrap" id="quote">
       <div class="quote panel">
         <div class="sec-t"><i class="ti ti-calculator" style="color:var(--accent)"></i> حاسبة السعر الفوري</div>
         <p class="page-sub" style="margin-bottom:16px">اختر جهازك ونوع العطل ليظهر السعر ومدة التصليح فوراً</p>
@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <section class="sec" id="services">
+    <section v-if="show('services')" class="sec" id="services">
       <div class="wrap">
         <h2 class="center">خدماتنا</h2>
         <p class="page-sub center">نصلّح كل أعطال الجوالات بقطع أصلية وضمان</p>
@@ -63,7 +63,7 @@
       </div>
     </section>
 
-    <section class="sec why">
+    <section v-if="show('why')" class="sec why">
       <div class="wrap">
         <h2 class="center">ليش تختارنا؟</h2>
         <div class="why-grid">
@@ -77,7 +77,7 @@
       </div>
     </section>
 
-    <section class="sec" style="padding-top:0">
+    <section v-if="show('track_cta')" class="sec" style="padding-top:0">
       <div class="wrap">
         <div class="track-cta">
           <h2>{{ settings.cta_title || 'تابع حالة تصليحك' }}</h2>
@@ -98,7 +98,7 @@
 const route = useRoute()
 const slug = route.params.slug
 const { shopApi } = useApi()
-const { settings, loadSettings, waLink, base } = useShop(slug)
+const { settings, loadSettings, waLink, base, themeVars, show } = useShop(slug)
 
 const catalog = ref({ makes: [], repair_types: [] })
 const sel = ref({ make: null, model: null, type: null })
