@@ -124,10 +124,6 @@ async function doReject(s) {
 async function doRenew(s) { await sa.renewShop(s.id); await load() }
 async function doSuspend(s) { await sa.updateShop(s.id, { status: 'suspended' }); await load(); await refreshStats() }
 async function doActivate(s) { await sa.updateShop(s.id, { status: 'active' }); await load(); await refreshStats() }
-async function doReject(s) {
-  if (!confirm(`رفض طلب تسجيل "${s.name}"؟ سيُحذف الطلب نهائيًا.`)) return
-  await sa.rejectShop(s.id); await load(); await refreshStats()
-}
 async function doDelete(s) {
   if (!confirm(`حذف محل "${s.name}" وكل بياناته؟`)) return
   await sa.deleteShop(s.id); await load(); await refreshStats()
@@ -175,11 +171,19 @@ table { width: 100%; border-collapse: collapse; }
 th, td { text-align: right; padding: 11px 10px; border-bottom: 1px solid var(--line-2); font-size: 14px; vertical-align: middle; }
 th { font-size: 12px; color: var(--muted); font-weight: 700; }
 .muted { color: var(--muted); font-size: 12px; }
-.mini { height: 32px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 12px; max-width: 120px; }
+.mini { height: 34px; width: 150px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 13px; padding: 0 10px; background: #fff; color: var(--ink); }
 .acts { display: flex; gap: 5px; }
 .act { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
 .act:hover { background: #F2F5F9; }
 .act.g { color: var(--green); border-color: #Bfe5d7; } .act.y { color: #B5790E; } .act.danger { color: var(--accent); }
 .empty { text-align: center; color: var(--muted); padding: 24px; }
+.reqs { background: #FFF8EC; border: 1px solid #F3D8A0; border-radius: 14px; padding: 15px 17px; margin-bottom: 18px; }
+.reqs-h { font-weight: 700; color: #92600A; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.req { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border: 1px solid #F0E0BE; border-radius: 10px; padding: 11px 14px; margin-top: 8px; flex-wrap: wrap; }
+.req-info { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 14px; }
+.req-info b { font-size: 15px; }
+.req-acts { display: flex; gap: 8px; }
+.btn-accept { background: var(--green); color: #fff; }
+.btn-reject { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
 @media (max-width: 1000px) { .kpis { grid-template-columns: 1fr 1fr; } .arow { grid-template-columns: 1fr 1fr; } }
 </style>
