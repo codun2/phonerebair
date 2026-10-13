@@ -1,64 +1,65 @@
 <template>
   <DashShell active="settings">
-    <h1 class="page-title">الإعدادات</h1>
-    <p class="page-sub">معلومات المحل والنصوص التي تظهر للزبائن في الموقع</p>
+    <h1 class="page-title">{{ t('الإعدادات') }}</h1>
+    <p class="page-sub">{{ t('معلومات المحل والنصوص التي تظهر للزبائن في الموقع') }}</p>
 
-    <div v-if="saved" class="ok-box" style="margin-bottom:16px;max-width:720px">تم حفظ الإعدادات ✓</div>
+    <div v-if="saved" class="ok-box" style="margin-bottom:16px;max-width:720px">{{ t('تم حفظ الإعدادات ✓') }}</div>
 
     <div class="panel" style="max-width:720px">
-      <h3 class="sec-t"><i class="ti ti-building-store" style="color:var(--accent)"></i> معلومات المحل</h3>
+      <h3 class="sec-t"><i class="ti ti-building-store" style="color:var(--accent)"></i> {{ t('معلومات المحل') }}</h3>
       <div class="g2">
-        <div class="frow"><label>اسم المحل</label><input v-model="f.shop_name" /></div>
-        <div class="frow"><label>الهاتف</label><input v-model="f.phone" dir="ltr" style="text-align:right" /></div>
-        <div class="frow"><label>واتساب (صيغة دولية)</label><input v-model="f.whatsapp" placeholder="9705..." dir="ltr" style="text-align:right" /></div>
-        <div class="frow"><label>ساعات الدوام</label><input v-model="f.hours" /></div>
+        <div class="frow"><label>{{ t('اسم المحل') }}</label><input v-model="f.shop_name" /></div>
+        <div class="frow"><label>{{ t('الهاتف') }}</label><input v-model="f.phone" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+        <div class="frow"><label>{{ t('واتساب (صيغة دولية)') }}</label><input v-model="f.whatsapp" placeholder="9705..." dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+        <div class="frow"><label>{{ t('ساعات الدوام') }}</label><input v-model="f.hours" /></div>
       </div>
-      <div class="frow"><label>العنوان</label><input v-model="f.address" /></div>
-      <div class="frow"><label>نبذة عن المحل</label><textarea v-model="f.about" rows="2"></textarea></div>
+      <div class="frow"><label>{{ t('العنوان') }}</label><input v-model="f.address" /></div>
+      <div class="frow"><label>{{ t('نبذة عن المحل') }}</label><textarea v-model="f.about" rows="2"></textarea></div>
     </div>
 
     <div class="panel" style="max-width:720px;margin-top:16px">
-      <h3 class="sec-t"><i class="ti ti-typography" style="color:var(--accent)"></i> نصوص الصفحة الرئيسية</h3>
-      <div class="frow"><label>شارة الهيرو</label><input v-model="f.hero_badge" placeholder="صيانة معتمدة · ضمان على كل تصليح" /></div>
-      <div class="frow"><label>عنوان الهيرو</label><input v-model="f.hero_title" placeholder="جهازك بأمان — تصليح احترافي بنفس اليوم" /></div>
-      <div class="frow"><label>وصف الهيرو</label><textarea v-model="f.hero_subtitle" rows="2"></textarea></div>
+      <h3 class="sec-t"><i class="ti ti-typography" style="color:var(--accent)"></i> {{ t('نصوص الصفحة الرئيسية') }}</h3>
+      <div class="frow"><label>{{ t('شارة الهيرو') }}</label><input v-model="f.hero_badge" :placeholder="t('صيانة معتمدة · ضمان على كل تصليح')" /></div>
+      <div class="frow"><label>{{ t('عنوان الهيرو') }}</label><input v-model="f.hero_title" :placeholder="t('جهازك بأمان — تصليح احترافي بنفس اليوم')" /></div>
+      <div class="frow"><label>{{ t('وصف الهيرو') }}</label><textarea v-model="f.hero_subtitle" rows="2"></textarea></div>
       <div class="g2">
-        <div class="frow"><label>عنوان دعوة التتبّع</label><input v-model="f.cta_title" placeholder="تابع حالة تصليحك" /></div>
-        <div class="frow"><label>نص دعوة التتبّع</label><input v-model="f.cta_text" /></div>
+        <div class="frow"><label>{{ t('عنوان دعوة التتبّع') }}</label><input v-model="f.cta_title" :placeholder="t('تابع حالة تصليحك')" /></div>
+        <div class="frow"><label>{{ t('نص دعوة التتبّع') }}</label><input v-model="f.cta_text" /></div>
       </div>
     </div>
 
     <div class="panel" style="max-width:720px;margin-top:16px">
-      <h3 class="sec-t"><i class="ti ti-palette" style="color:var(--accent)"></i> مظهر الموقع</h3>
+      <h3 class="sec-t"><i class="ti ti-palette" style="color:var(--accent)"></i> {{ t('مظهر الموقع') }}</h3>
 
       <div class="frow">
-        <label>اللون الأساسي للموقع</label>
+        <label>{{ t('اللون الأساسي للموقع') }}</label>
         <div class="color-row">
           <input type="color" v-model="f.theme_primary" class="swatch" />
           <input v-model="f.theme_primary" dir="ltr" class="hex" placeholder="#185FA5" />
           <span v-for="c in presets" :key="c" class="preset" :style="{ background: c }" @click="f.theme_primary = c" :title="c"></span>
-          <button class="btn mini-btn" type="button" @click="f.theme_primary = '#185FA5'">افتراضي</button>
+          <button class="btn mini-btn" type="button" @click="f.theme_primary = '#185FA5'">{{ t('افتراضي') }}</button>
         </div>
-        <div class="hint">يُطبَّق على الأزرار والشعار والعناوين في موقع محلك العام.</div>
+        <div class="hint">{{ t('يُطبَّق على الأزرار والشعار والعناوين في موقع محلك العام.') }}</div>
       </div>
 
-      <label class="block-label">الأقسام الظاهرة في الصفحة الرئيسية</label>
+      <label class="block-label">{{ t('الأقسام الظاهرة في الصفحة الرئيسية') }}</label>
       <div class="toggles">
-        <label class="tg"><input type="checkbox" v-model="f.show_quote" true-value="1" false-value="0" /> <span>حاسبة السعر الفوري</span></label>
-        <label class="tg"><input type="checkbox" v-model="f.show_services" true-value="1" false-value="0" /> <span>قائمة الخدمات</span></label>
-        <label class="tg"><input type="checkbox" v-model="f.show_why" true-value="1" false-value="0" /> <span>قسم «ليش تختارنا»</span></label>
-        <label class="tg"><input type="checkbox" v-model="f.show_track_cta" true-value="1" false-value="0" /> <span>صندوق تتبّع الطلب</span></label>
+        <label class="tg"><input type="checkbox" v-model="f.show_quote" true-value="1" false-value="0" /> <span>{{ t('حاسبة السعر الفوري') }}</span></label>
+        <label class="tg"><input type="checkbox" v-model="f.show_services" true-value="1" false-value="0" /> <span>{{ t('قائمة الخدمات') }}</span></label>
+        <label class="tg"><input type="checkbox" v-model="f.show_why" true-value="1" false-value="0" /> <span>{{ t('قسم «ليش تختارنا»') }}</span></label>
+        <label class="tg"><input type="checkbox" v-model="f.show_track_cta" true-value="1" false-value="0" /> <span>{{ t('صندوق تتبّع الطلب') }}</span></label>
       </div>
 
-      <a :href="'/s/' + (f.slug || 'main')" target="_blank" class="link" style="display:inline-block;margin-top:14px"><i class="ti ti-external-link"></i> معاينة موقعي العام</a>
+      <a :href="'/s/' + (f.slug || 'main')" target="_blank" class="link" style="display:inline-block;margin-top:14px"><i class="ti ti-external-link"></i> {{ t('معاينة موقعي العام') }}</a>
     </div>
 
-    <button class="btn btn-accent btn-lg" style="margin-top:16px" @click="save" :disabled="busy"><i class="ti ti-device-floppy"></i> {{ busy ? '...' : 'حفظ الإعدادات' }}</button>
+    <button class="btn btn-accent btn-lg" style="margin-top:16px" @click="save" :disabled="busy"><i class="ti ti-device-floppy"></i> {{ busy ? '...' : t('حفظ الإعدادات') }}</button>
   </DashShell>
 </template>
 
 <script setup>
 const { api } = useApi()
+const { t, isEn } = useI18n()
 const f = ref({})
 const busy = ref(false)
 const saved = ref(false)
