@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SiteHeader />
+    <SiteHeader :slug="slug" />
     <section class="phead">
       <h1 class="page-title" style="color:#fff">احجز موعد تصليح</h1>
       <p style="color:#B5D4F4">عبّي بياناتك وبنتواصل معك لتأكيد الموعد</p>
@@ -11,7 +11,7 @@
         <div v-if="done" class="ok-box">
           <i class="ti ti-circle-check" style="font-size:24px"></i>
           <div style="margin-top:8px">تم استلام حجزك! بنراسلك على واتساب قريباً.</div>
-          <NuxtLink to="/" class="link" style="display:inline-block;margin-top:10px">← رجوع للرئيسية</NuxtLink>
+          <NuxtLink :to="base" class="link" style="display:inline-block;margin-top:10px">← رجوع للرئيسية</NuxtLink>
         </div>
 
         <template v-else>
@@ -50,12 +50,15 @@
         </template>
       </div>
     </div>
-    <SiteFooter />
+    <SiteFooter :slug="slug" />
   </div>
 </template>
 
 <script setup>
-const { api } = useApi()
+const route = useRoute()
+const slug = route.params.slug
+const { shopApi } = useApi()
+const { base } = useShop(slug)
 const catalog = ref({ makes: [], repair_types: [] })
 const f = ref({ name: '', phone: '', make: '', repair_type: '', service_type: 'visit', preferred_time: 'اليوم مساءً', note: '' })
 const done = ref(false)
@@ -67,7 +70,7 @@ async function submit() {
   if (!f.value.name || !f.value.phone) { err.value = 'الاسم ورقم الجوال مطلوبان'; return }
   loading.value = true
   try {
-    await api('/site/booking', { method: 'POST', body: f.value })
+    await shopApi(slug, '/booking', { method: 'POST', body: f.value })
     done.value = true
   } catch (e) {
     err.value = 'تعذّر إرسال الحجز — حاول مجدداً'
@@ -75,7 +78,7 @@ async function submit() {
 }
 
 onMounted(async () => {
-  catalog.value = await api('/site/catalog')
+  try { catalog.value = await shopApi(slug, '/catalog') } catch {}
   f.value.make = catalog.value.makes[0]?.name || ''
   f.value.repair_type = catalog.value.repair_types[0]?.name || ''
 })

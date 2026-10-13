@@ -1,183 +1,133 @@
 <template>
-  <div>
-    <SiteHeader />
+  <div class="lp">
+    <header class="nav">
+      <div class="brand">
+        <div class="logo"><i class="ti ti-device-mobile"></i></div>
+        <div><div class="bt">فيكس بلس</div><div class="bs">FIX PLUS</div></div>
+      </div>
+      <div class="right">
+        <NuxtLink to="/login" class="ghost">دخول</NuxtLink>
+        <NuxtLink to="/register" class="btn btn-accent"><i class="ti ti-rocket"></i> سجّل محلك</NuxtLink>
+      </div>
+    </header>
 
-    <!-- Hero -->
     <section class="hero">
       <div class="hero-in">
-        <span class="tag"><i class="ti ti-shield-check"></i> {{ settings.hero_badge || 'صيانة معتمدة · ضمان على كل تصليح' }}</span>
-        <h1>{{ settings.hero_title || 'جهازك بأمان — تصليح احترافي بنفس اليوم' }}</h1>
-        <p>{{ settings.hero_subtitle || 'اعرف سعر التصليح فوراً، احجز موعدك، وتابع حالة جهازك لحظة بلحظة.' }}</p>
+        <span class="tag"><i class="ti ti-sparkles"></i> نظام متكامل لإدارة محلات صيانة الجوالات</span>
+        <h1>أدِر محل صيانة جوالاتك باحتراف — من مكان واحد</h1>
+        <p>تذاكر تصليح، حاسبة أسعار فورية، حجوزات أونلاين، تتبّع للزبائن، مخزون، وفريق — كل شي بنظام واحد سهل.</p>
         <div class="cta">
-          <a href="#quote" class="btn btn-accent btn-lg"><i class="ti ti-calculator"></i> احسب سعر التصليح</a>
-          <a v-if="waLink" :href="waLink" target="_blank" class="btn btn-wa btn-lg"><i class="ti ti-brand-whatsapp"></i> تواصل واتساب</a>
+          <NuxtLink to="/register" class="btn btn-accent btn-lg"><i class="ti ti-rocket"></i> ابدأ الآن مجانًا</NuxtLink>
+          <a href="#plans" class="btn btn-ghost btn-lg">شوف الباقات</a>
         </div>
+        <div class="trust"><i class="ti ti-circle-check"></i> تفعيل خلال دقائق · <i class="ti ti-circle-check"></i> موقع حجز خاص بمحلك · <i class="ti ti-circle-check"></i> دعم بالعربي</div>
       </div>
     </section>
 
-    <!-- Instant quote calculator -->
-    <div class="quote-wrap" id="quote">
-      <div class="quote panel">
-        <div class="sec-t"><i class="ti ti-calculator" style="color:var(--accent)"></i> حاسبة السعر الفوري</div>
-        <p class="page-sub" style="margin-bottom:16px">اختر جهازك ونوع العطل ليظهر السعر ومدة التصليح فوراً</p>
-        <div class="g3">
-          <div><label>الماركة</label>
-            <select v-model="sel.make" @change="onMake">
-              <option v-for="m in catalog.makes" :key="m.id" :value="m">{{ m.name }}</option>
-            </select>
-          </div>
-          <div><label>الموديل</label>
-            <select v-model="sel.model" @change="calc">
-              <option v-for="md in (sel.make?.models || [])" :key="md.id" :value="md">{{ md.name }}</option>
-            </select>
-          </div>
-          <div><label>نوع العطل</label>
-            <select v-model="sel.type" @change="calc">
-              <option v-for="t in catalog.repair_types" :key="t.id" :value="t">{{ t.name }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="result" :class="{ empty: !result?.found }">
-          <template v-if="result?.found">
-            <div><div class="rl">السعر التقديري</div><div class="price">{{ fmt(result.price) }} <span>ر.س</span></div></div>
-            <div class="center"><div class="rl">مدة التصليح</div><div class="rv">{{ result.duration_minutes }} دقيقة</div></div>
-            <div class="center"><div class="rl">الضمان</div><div class="rv">{{ result.warranty_months }} أشهر</div></div>
-            <div class="spacer"></div>
-            <NuxtLink to="/book" class="btn btn-accent btn-lg">احجز التصليح ←</NuxtLink>
-          </template>
-          <template v-else>
-            <span style="color:var(--muted)"><i class="ti ti-info-circle"></i> {{ result?.message || 'اختر الماركة والموديل ونوع العطل' }}</span>
-          </template>
-        </div>
-      </div>
-    </div>
-
-    <!-- Services -->
-    <section class="sec" id="services">
+    <section class="sec">
       <div class="wrap">
-        <h2 class="center">خدماتنا</h2>
-        <p class="page-sub center">نصلّح كل أعطال الجوالات بقطع أصلية وضمان</p>
-        <div class="svc-grid">
-          <div v-for="s in catalog.repair_types" :key="s.id" class="svc">
-            <div class="ic"><i :class="'ti ' + (s.icon || 'ti-tool')"></i></div>
-            <h4>{{ s.name }}</h4>
-          </div>
+        <h2 class="center">كل اللي يحتاجه محلك</h2>
+        <p class="sub center">مصمَّم خصيصًا لمحلات صيانة الجوالات</p>
+        <div class="feats">
+          <div class="feat"><div class="ic"><i class="ti ti-ticket"></i></div><h4>نظام تذاكر</h4><p>استقبل الأجهزة، عيّن الفني، وتابع الحالة من الاستلام للتسليم.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-calculator"></i></div><h4>حاسبة أسعار فورية</h4><p>الزبون يعرف سعر التصليح والمدة قبل لا يجي المحل.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-calendar-check"></i></div><h4>حجوزات أونلاين</h4><p>موقع حجز خاص بمحلك يستقبل الطلبات ٢٤ ساعة.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-map-pin-search"></i></div><h4>تتبّع للزبون</h4><p>الزبون يتابع حالة جهازه برقم التذكرة لحظة بلحظة.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-packages"></i></div><h4>إدارة المخزون</h4><p>تابع قطع الغيار وتنبيهات النفاد تلقائيًا.</p></div>
+          <div class="feat"><div class="ic"><i class="ti ti-users"></i></div><h4>فريق وفنيون</h4><p>وزّع التذاكر على الفنيين وتابع أداءهم.</p></div>
         </div>
       </div>
     </section>
 
-    <!-- Why us -->
-    <section class="sec why">
+    <section class="sec plans" id="plans">
       <div class="wrap">
-        <h2 class="center">ليش موبايل فيكس؟</h2>
-        <div class="why-grid">
-          <div class="why-item"><div class="ic"><i class="ti ti-clock-bolt"></i></div><div><h4>تصليح سريع</h4><p>أغلب التصليحات تخلص بنفس اليوم.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-shield-check"></i></div><div><h4>ضمان مكتوب</h4><p>ضمان حتى ٦ أشهر على القطع والصيانة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-eye"></i></div><div><h4>شفافية كاملة</h4><p>تعرف السعر قبل التصليح وتتابع الحالة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-certificate"></i></div><div><h4>فنيون معتمدون</h4><p>فريق متخصص بكل أنواع الأجهزة.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-cpu"></i></div><div><h4>قطع أصلية</h4><p>نستخدم قطع أصلية بمصدر موثوق.</p></div></div>
-          <div class="why-item"><div class="ic"><i class="ti ti-message-2"></i></div><div><h4>تحديثات فورية</h4><p>رسائل واتساب بكل خطوة.</p></div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Track CTA -->
-    <section class="sec" style="padding-top:0">
-      <div class="wrap">
-        <div class="track-cta">
-          <h2>{{ settings.cta_title || 'تابع حالة تصليحك' }}</h2>
-          <p>{{ settings.cta_text || 'أدخل رقم التذكرة أو رقم جوالك وشوف وين وصل جهازك' }}</p>
-          <div class="track-in">
-            <input v-model="trackQ" placeholder="RX-10248" @keyup.enter="goTrack" />
-            <button class="btn btn-lg" style="background:#fff;color:var(--accent-d)" @click="goTrack">تتبّع</button>
+        <h2 class="center">باقات بسيطة وواضحة</h2>
+        <p class="sub center">اختر الباقة المناسبة لمحلك — فعّلها وابدأ فورًا</p>
+        <div class="plan-grid">
+          <div v-for="(p, i) in plans" :key="p.id" class="plan" :class="{ pop: i === 1 }">
+            <div v-if="i === 1" class="badge">الأكثر طلبًا</div>
+            <h3>{{ p.name }}</h3>
+            <div class="price">{{ Number(p.price).toLocaleString('ar-EG') }} <span>ر.س / {{ p.duration_days }} يوم</span></div>
+            <p class="pdesc">{{ p.description || '' }}</p>
+            <ul>
+              <li><i class="ti ti-check"></i> تذاكر وحجوزات غير محدودة</li>
+              <li><i class="ti ti-check"></i> {{ p.max_technicians ? p.max_technicians + ' فنيين' : 'فنيون غير محدودين' }}</li>
+              <li><i class="ti ti-check"></i> موقع حجز وتتبّع خاص بمحلك</li>
+            </ul>
+            <NuxtLink to="/register" class="btn btn-block" :class="i === 1 ? 'btn-accent' : 'btn-ghost'">اختر الباقة</NuxtLink>
           </div>
+          <div v-if="!plans.length" class="center" style="grid-column:1/-1;color:var(--muted)">سيتم عرض الباقات قريبًا</div>
         </div>
       </div>
     </section>
 
-    <SiteFooter />
+    <section class="cta-band">
+      <div class="wrap center">
+        <h2 style="color:#fff">جاهز تطوّر محلك؟</h2>
+        <p>سجّل محلك اليوم وابدأ باستقبال الحجوزات خلال دقائق.</p>
+        <NuxtLink to="/register" class="btn btn-lg" style="background:#fff;color:var(--accent-d)"><i class="ti ti-rocket"></i> سجّل محلك الآن</NuxtLink>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="wrap fin">
+        <div class="brand"><div class="logo sm"><i class="ti ti-device-mobile"></i></div><b style="color:#fff">فيكس بلس</b></div>
+        <span>© 2026 فيكس بلس — نظام إدارة محلات صيانة الجوالات</span>
+      </div>
+    </footer>
   </div>
 </template>
 
 <script setup>
 const { api } = useApi()
-const { settings, loadSettings, waLink } = useSettings()
-
-const catalog = ref({ makes: [], repair_types: [] })
-const sel = ref({ make: null, model: null, type: null })
-const result = ref(null)
-const trackQ = ref('')
-
-const fmt = (n) => Number(n).toLocaleString('ar-EG')
-
-function onMake() {
-  sel.value.model = sel.value.make?.models?.[0] || null
-  calc()
-}
-
-async function calc() {
-  if (!sel.value.make || !sel.value.type) { result.value = null; return }
-  try {
-    result.value = await api('/site/quote', {
-      method: 'POST',
-      body: {
-        make_id: sel.value.make.id,
-        car_model_id: sel.value.model?.id || null,
-        repair_type_id: sel.value.type.id,
-      },
-    })
-  } catch { result.value = { found: false } }
-}
-
-function goTrack() {
-  navigateTo('/track?q=' + encodeURIComponent(trackQ.value || ''))
-}
-
-onMounted(async () => {
-  await loadSettings()
-  catalog.value = await api('/site/catalog')
-  sel.value.make = catalog.value.makes.find(m => m.name === 'Apple') || catalog.value.makes[0]
-  sel.value.model = sel.value.make?.models?.find(x => x.name === 'iPhone 14') || sel.value.make?.models?.[0]
-  sel.value.type = catalog.value.repair_types[0]
-  calc()
-})
+const plans = ref([])
+onMounted(async () => { try { plans.value = await api('/plans') } catch {} })
 </script>
 
 <style scoped>
-.hero { background: linear-gradient(180deg, #E6F1FB, var(--bg)); padding: 60px 22px 44px; text-align: center; }
-.hero-in { max-width: 640px; margin: 0 auto; }
-.tag { display: inline-block; background: #fff; border: 1px solid var(--line); color: var(--accent-d); font-size: 13px; padding: 6px 14px; border-radius: 20px; margin-bottom: 18px; font-weight: 500; }
-.hero h1 { font-size: 40px; font-weight: 800; line-height: 1.3; margin-bottom: 14px; }
-.hero p { font-size: 17px; color: #4A4F5A; margin-bottom: 24px; }
-.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.quote-wrap { max-width: 780px; margin: -28px auto 0; padding: 0 22px; position: relative; z-index: 5; }
-.quote { border-radius: 18px; box-shadow: 0 12px 40px rgba(20,50,90,.10); }
-.result { display: flex; align-items: center; gap: 20px; background: #E1F5EE; border-radius: 14px; padding: 18px 22px; margin-top: 16px; flex-wrap: wrap; }
-.result.empty { background: var(--line-2); }
-.rl { font-size: 12px; color: var(--green); }
-.result.empty .rl { color: var(--muted); }
-.price { font-size: 30px; font-weight: 800; color: #04342C; }
-.price span { font-size: 15px; }
-.rv { font-size: 16px; font-weight: 700; color: #04342C; }
-.spacer { flex: 1; }
+.lp { background: var(--bg, #F4F6FA); }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: var(--ink); }
+.brand { display: flex; align-items: center; gap: 11px; }
+.logo { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.logo.sm { width: 32px; height: 32px; font-size: 18px; }
+.bt { font-size: 18px; font-weight: 800; color: #fff; }
+.bs { font-size: 10px; color: #8b98ad; letter-spacing: 3px; }
+.right { display: flex; align-items: center; gap: 14px; }
+.ghost { color: #cdd6e6; font-size: 14px; }
+.ghost:hover { color: #fff; }
+.hero { background: linear-gradient(180deg, var(--ink), var(--ink-2, #1E2E4E)); color: #fff; text-align: center; padding: 72px 22px 80px; }
+.hero-in { max-width: 720px; margin: 0 auto; }
+.tag { display: inline-block; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); color: #cfe0f5; font-size: 13px; padding: 7px 16px; border-radius: 20px; margin-bottom: 20px; }
+.hero h1 { font-size: 42px; font-weight: 800; line-height: 1.3; margin-bottom: 16px; color: #fff; }
+.hero p { font-size: 18px; color: #c3ccdb; margin-bottom: 26px; line-height: 1.8; }
+.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.btn-ghost { background: rgba(255,255,255,.1); color: #fff; }
+.trust { font-size: 13px; color: #8fa1bb; }
+.trust i { color: var(--green); }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
-.sec { padding: 54px 0; }
-.sec h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-.svc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
-.svc { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 24px 16px; text-align: center; transition: .2s; }
-.svc:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(20,50,90,.08); }
-.svc .ic { width: 54px; height: 54px; border-radius: 14px; background: #E6F1FB; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 12px; }
-.svc h4 { font-size: 15px; font-weight: 700; }
-.why { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 26px; }
-.why-item { display: flex; gap: 14px; }
-.why-item .ic { width: 46px; height: 46px; border-radius: 12px; background: #E1F5EE; color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 23px; flex-shrink: 0; }
-.why-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
-.why-item p { font-size: 13px; color: var(--muted); }
-.track-cta { background: var(--accent-d); border-radius: 20px; padding: 40px; text-align: center; color: #fff; }
-.track-cta h2 { color: #fff; }
-.track-cta p { color: #B5D4F4; margin-bottom: 20px; }
-.track-in { display: flex; gap: 10px; max-width: 440px; margin: 0 auto; }
-.track-in input { flex: 1; }
-@media (max-width: 820px) { .hero h1 { font-size: 30px; } .svc-grid { grid-template-columns: 1fr 1fr; } .why-grid { grid-template-columns: 1fr; } }
+.sec { padding: 60px 0; }
+.sec h2 { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+.sub { color: var(--muted); margin-bottom: 36px; }
+.feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.feat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 26px 22px; }
+.feat .ic { width: 52px; height: 52px; border-radius: 13px; background: #E6F1FB; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 25px; margin-bottom: 14px; }
+.feat h4 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.feat p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.plans { background: #fff; border-top: 1px solid var(--line); }
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
+.plan { border: 1px solid var(--line); border-radius: 18px; padding: 28px 24px; position: relative; background: #fff; display: flex; flex-direction: column; }
+.plan.pop { border-color: var(--accent); box-shadow: 0 14px 40px rgba(24,95,165,.14); }
+.badge { position: absolute; top: -12px; right: 24px; background: var(--accent); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 20px; }
+.plan h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.price { font-size: 32px; font-weight: 800; color: var(--accent-d); margin-bottom: 4px; }
+.price span { font-size: 14px; font-weight: 500; color: var(--muted); }
+.pdesc { font-size: 13px; color: var(--muted); margin-bottom: 16px; min-height: 18px; }
+.plan ul { list-style: none; padding: 0; margin: 0 0 20px; flex: 1; }
+.plan li { display: flex; align-items: center; gap: 8px; font-size: 14px; padding: 7px 0; }
+.plan li i { color: var(--green); }
+.cta-band { background: var(--accent-d); padding: 56px 22px; text-align: center; }
+.cta-band p { color: #B5D4F4; margin: 8px 0 22px; }
+.foot { background: #0E1526; padding: 26px 0; }
+.fin { display: flex; align-items: center; justify-content: space-between; color: #8A909C; font-size: 13px; }
+@media (max-width: 860px) { .hero h1 { font-size: 30px; } .feats, .plan-grid { grid-template-columns: 1fr; } .fin { flex-direction: column; gap: 12px; } }
 </style>

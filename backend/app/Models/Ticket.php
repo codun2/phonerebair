@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToShop;
 
 class Ticket extends Model
 {
-    protected $fillable = [
+    use BelongsToShop;
+
+    protected $fillable = ['shop_id', 
         'ticket_no', 'customer_name', 'customer_phone', 'make', 'model', 'imei',
         'repair_type_id', 'description', 'price', 'warranty_months', 'status',
         'technician_id', 'created_by', 'delivered_at',

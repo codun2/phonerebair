@@ -15,7 +15,15 @@ class SiteController extends Controller
 {
     public function settings()
     {
-        return response()->json(Setting::all_map());
+        $map = Setting::all_map();
+        $shop = app()->bound('currentShop') ? app('currentShop') : null;
+        if ($shop) {
+            $map['shop_name'] = $shop->name;
+            $map['slug'] = $shop->slug;
+            $map['logo'] = $shop->logo_path;
+        }
+
+        return response()->json($map);
     }
 
     /** الماركات + الموديلات + أنواع الأعطال — تغذّي حاسبة السعر والحجز */
@@ -108,8 +116,10 @@ class SiteController extends Controller
         ]);
 
         $ticket = Ticket::with(['repairType:id,name', 'technician:id,name', 'events'])
-            ->where('ticket_no', $data['q'])
-            ->orWhere('customer_phone', $data['q'])
+            ->where(function ($q) use ($data) {
+                $q->where('ticket_no', $data['q'])
+                    ->orWhere('customer_phone', $data['q']);
+            })
             ->latest()
             ->first();
 

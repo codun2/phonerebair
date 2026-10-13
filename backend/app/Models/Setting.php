@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToShop;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value'];
+    use BelongsToShop;
+
+    protected $fillable = ['shop_id', 'key', 'value'];
 
     public static function all_map(): array
     {

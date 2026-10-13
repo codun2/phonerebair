@@ -18,19 +18,46 @@ Route::get('/health', function () {
     return response()->json(['message' => 'MobileFix API up', 'db' => $db, 'host' => request()->getHost()]);
 });
 
-// ---- الموقع العام (بلا تسجيل) ----
-Route::get('/site/settings', [SiteController::class, 'settings']);
-Route::get('/site/catalog', [SiteController::class, 'catalog']);       // ماركات/موديلات/أعطال
-Route::get('/site/services', [SiteController::class, 'services']);
-Route::post('/site/quote', [SiteController::class, 'quote']);          // حاسبة السعر
-Route::post('/site/booking', [SiteController::class, 'booking']);      // حجز
-Route::post('/site/track', [SiteController::class, 'track']);          // تتبّع حالة التصليح
+// ---- الباقات (للموقع التعريفي العام) ----
+Route::get('/plans', fn () => \App\Models\Plan::where('is_active', true)
+    ->orderBy('sort_order')->get(['id', 'name', 'slug', 'price', 'duration_days', 'description', 'max_technicians']));
+
+// ---- تسجيل محل جديد (self-signup → بانتظار الموافقة) ----
+Route::post('/register-shop', [App\Http\Controllers\ShopRegistrationController::class, 'register']);
+
+// ---- الموقع العام لكل محل: /api/shops/{slug}/... ----
+Route::prefix('shops/{shopSlug}')->middleware('shop.slug')->group(function () {
+    Route::get('/settings', [SiteController::class, 'settings']);
+    Route::get('/catalog', [SiteController::class, 'catalog']);       // ماركات/موديلات/أعطال
+    Route::get('/services', [SiteController::class, 'services']);
+    Route::post('/quote', [SiteController::class, 'quote']);          // حاسبة السعر
+    Route::post('/booking', [SiteController::class, 'booking']);      // حجز
+    Route::post('/track', [SiteController::class, 'track']);          // تتبّع حالة التصليح
+});
 
 // ---- دخول ----
 Route::post('/login', [AuthController::class, 'login']);
 
-// ---- لوحة التحكم ----
-Route::middleware('auth:sanctum')->group(function () {
+// ---- لوحة الإدارة العليا للمنصّة (super-admin) ----
+Route::prefix('super')->middleware(['auth:sanctum', 'super_admin'])->group(function () {
+    Route::get('/stats', [App\Http\Controllers\SuperAdminController::class, 'stats']);
+
+    Route::get('/shops', [App\Http\Controllers\SuperAdminController::class, 'shops']);
+    Route::post('/shops', [App\Http\Controllers\SuperAdminController::class, 'createShop']);
+    Route::get('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'showShop']);
+    Route::put('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'updateShop']);
+    Route::post('/shops/{id}/approve', [App\Http\Controllers\SuperAdminController::class, 'approveShop']);
+    Route::post('/shops/{id}/renew', [App\Http\Controllers\SuperAdminController::class, 'renewShop']);
+    Route::delete('/shops/{id}', [App\Http\Controllers\SuperAdminController::class, 'destroyShop']);
+
+    Route::get('/plans', [App\Http\Controllers\SuperAdminController::class, 'plans']);
+    Route::post('/plans', [App\Http\Controllers\SuperAdminController::class, 'storePlan']);
+    Route::put('/plans/{id}', [App\Http\Controllers\SuperAdminController::class, 'updatePlan']);
+    Route::delete('/plans/{id}', [App\Http\Controllers\SuperAdminController::class, 'destroyPlan']);
+});
+
+// ---- لوحة إدارة المحل ----
+Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/uploads', [UploadController::class, 'store']);

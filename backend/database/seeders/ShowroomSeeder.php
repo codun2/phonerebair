@@ -19,10 +19,10 @@ class ShowroomSeeder extends Seeder
 {
     public function run(): void
     {
-        // حساب المدير
+        // حساب مدير المحل (مربوط بالمحل الحالي)
         User::updateOrCreate(
             ['email' => 'admin@mobilefix.local'],
-            ['name' => 'أحمد المدير', 'password' => 'mobilefix1234', 'role' => 'admin', 'active' => true],
+            ['name' => 'أحمد المدير', 'password' => 'mobilefix1234', 'role' => 'admin', 'active' => true, 'shop_id' => app('currentShopId')],
         );
 
         // إعدادات المحل
