@@ -1,18 +1,18 @@
 <template>
   <DashShell active="catalog">
-    <h1 class="page-title">الماركات والموديلات</h1>
-    <p class="page-sub">حدّد ماركات الجوالات وموديلاتها — تظهر في حاسبة السعر والحجز وفتح التذاكر</p>
+    <h1 class="page-title">{{ t('الماركات والموديلات') }}</h1>
+    <p class="page-sub">{{ t('حدّد ماركات الجوالات وموديلاتها — تظهر في حاسبة السعر والحجز وفتح التذاكر') }}</p>
 
     <div class="panel" style="max-width:520px; margin-bottom:20px;">
-      <h3 class="sec-t">إضافة ماركة جديدة</h3>
+      <h3 class="sec-t">{{ t('إضافة ماركة جديدة') }}</h3>
       <form style="display:flex; gap:10px;" @submit.prevent="addMake">
-        <input v-model="newMake" placeholder="مثال: Realme" style="flex:1;" />
-        <button class="btn btn-accent" :disabled="busy || !newMake.trim()"><i class="ti ti-plus"></i> إضافة</button>
+        <input v-model="newMake" :placeholder="t('مثال: Realme')" style="flex:1;" />
+        <button class="btn btn-accent" :disabled="busy || !newMake.trim()"><i class="ti ti-plus"></i> {{ t('إضافة') }}</button>
       </form>
     </div>
 
-    <div v-if="pending" class="empty">جارِ التحميل…</div>
-    <div v-else-if="!makes.length" class="empty">لا توجد ماركات بعد — أضف أول ماركة فوق</div>
+    <div v-if="pending" class="empty">{{ t('جارِ التحميل…') }}</div>
+    <div v-else-if="!makes.length" class="empty">{{ t('لا توجد ماركات بعد — أضف أول ماركة فوق') }}</div>
 
     <div class="mgrid">
       <div v-for="m in makes" :key="m.id" class="mcard">
@@ -45,10 +45,10 @@
               <i class="ti ti-x" @click="delModel(m, mo)"></i>
             </span>
           </template>
-          <span v-if="!m.models.length" class="none">لا موديلات بعد</span>
+          <span v-if="!m.models.length" class="none">{{ t('لا موديلات بعد') }}</span>
         </div>
         <div class="addmo">
-          <input v-model="newModels[m.id]" placeholder="موديل جديد…" @keyup.enter="addModel(m)" />
+          <input v-model="newModels[m.id]" :placeholder="t('موديل جديد…')" @keyup.enter="addModel(m)" />
           <button type="button" class="btn btn-out" @click="addModel(m)"><i class="ti ti-plus"></i></button>
         </div>
       </div>
@@ -59,6 +59,7 @@
 <script setup>
 const { api } = useApi()
 const { confirmDlg } = useConfirm()
+const { t } = useI18n()
 
 const makes = ref([])
 const newModels = reactive({})
@@ -75,16 +76,16 @@ async function load() {
 async function addMake() {
   busy.value = true
   try { await api('/dashboard/makes', { method: 'POST', body: { name: newMake.value.trim() } }); newMake.value = ''; await load() }
-  catch (e) { alert(e?.data?.message || 'الماركة موجودة مسبقاً') }
+  catch (e) { alert(e?.data?.message || t('الماركة موجودة مسبقاً')) }
   finally { busy.value = false }
 }
 async function saveMake() {
   const name = editMake.value?.name?.trim(); if (!name) return
   try { await api(`/dashboard/makes/${editMake.value.id}`, { method: 'PUT', body: { name } }); editMake.value = null; await load() }
-  catch (e) { alert(e?.data?.message || 'الاسم مستخدم مسبقاً') }
+  catch (e) { alert(e?.data?.message || t('الاسم مستخدم مسبقاً')) }
 }
 async function delMake(m) {
-  if (!(await confirmDlg(`حذف ${m.name}؟`, 'سيُحذف مع كل موديلاته'))) return
+  if (!(await confirmDlg(`${t('حذف')} ${m.name}؟`, t('سيُحذف مع كل موديلاته')))) return
   await api(`/dashboard/makes/${m.id}`, { method: 'DELETE' }); await load()
 }
 async function addModel(m) {
@@ -98,7 +99,7 @@ async function saveModel() {
   editModel.value = null; await load()
 }
 async function delModel(m, mo) {
-  if (!(await confirmDlg(`حذف موديل ${mo.name}؟`))) return
+  if (!(await confirmDlg(`${t('حذف موديل')} ${mo.name}؟`))) return
   await api(`/dashboard/models/${mo.id}`, { method: 'DELETE' }); await load()
 }
 onMounted(load)

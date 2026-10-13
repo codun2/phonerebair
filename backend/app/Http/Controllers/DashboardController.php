@@ -452,7 +452,9 @@ class DashboardController extends Controller
         return $request->validate([
             'name' => 'required|string|max:100',
             'phone' => 'nullable|string|max:30',
+            'email' => 'nullable|email|max:160',
             'specialty' => 'nullable|string|max:100',
+            'notes' => 'nullable|string|max:1000',
             'active' => 'boolean',
         ]);
     }

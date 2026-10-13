@@ -1,30 +1,30 @@
 <template>
   <DashShell active="tickets">
     <div class="ph">
-      <div><div class="page-title">التذاكر</div><p class="page-sub">إدارة كل طلبات التصليح</p></div>
-      <NuxtLink to="/admin/ticket-new" class="btn btn-accent"><i class="ti ti-plus"></i> تذكرة جديدة</NuxtLink>
+      <div><div class="page-title">{{ tr('التذاكر') }}</div><p class="page-sub">{{ tr('إدارة كل طلبات التصليح') }}</p></div>
+      <NuxtLink to="/admin/ticket-new" class="btn btn-accent"><i class="ti ti-plus"></i> {{ tr('تذكرة جديدة') }}</NuxtLink>
     </div>
 
     <div class="chips">
-      <button class="chip" :class="{ on: !filter }" @click="setFilter('')">الكل ({{ total }})</button>
+      <button class="chip" :class="{ on: !filter }" @click="setFilter('')">{{ tr('الكل') }} ({{ total }})</button>
       <button v-for="st in statuses" :key="st.key" class="chip" :class="{ on: filter === st.key }" @click="setFilter(st.key)">
-        {{ st.label }} ({{ counts[st.key] || 0 }})
+        {{ tr(st.label) }} ({{ counts[st.key] || 0 }})
       </button>
     </div>
 
     <table>
-      <thead><tr><th>التذكرة</th><th>الزبون</th><th>الجهاز / العطل</th><th>السعر</th><th>الحالة</th><th>الفني</th><th>التاريخ</th></tr></thead>
+      <thead><tr><th>{{ tr('التذكرة') }}</th><th>{{ tr('الزبون') }}</th><th>{{ tr('الجهاز / العطل') }}</th><th>{{ tr('السعر') }}</th><th>{{ tr('الحالة') }}</th><th>{{ tr('الفني') }}</th><th>{{ tr('التاريخ') }}</th></tr></thead>
       <tbody>
         <tr v-for="t in tickets" :key="t.id" @click="open(t)" style="cursor:pointer">
           <td><b style="color:var(--accent-d)">{{ t.ticket_no }}</b></td>
           <td>{{ t.customer_name }}<div class="muted" dir="ltr" style="text-align:right">{{ t.customer_phone }}</div></td>
           <td>{{ t.device }} <span class="muted">· {{ t.repair_type }}</span></td>
-          <td>{{ t.price ? fmt(t.price) + ' ر.س' : '—' }}</td>
+          <td>{{ t.price ? fmt(t.price) + ' ' + tr('ر.س') : '—' }}</td>
           <td><StatusPill :status="t.status" :label="t.status_label" /></td>
           <td>{{ t.technician || '—' }}</td>
           <td class="muted">{{ t.created_at }}</td>
         </tr>
-        <tr v-if="!tickets.length"><td colspan="7" class="empty">لا توجد تذاكر بهذا الفلتر</td></tr>
+        <tr v-if="!tickets.length"><td colspan="7" class="empty">{{ tr('لا توجد تذاكر بهذا الفلتر') }}</td></tr>
       </tbody>
     </table>
 
@@ -35,31 +35,31 @@
           <div><b style="color:var(--accent-d);font-size:18px">{{ sel.ticket_no }}</b><div class="muted">{{ det.created_at }}</div></div>
           <button class="act" @click="sel = null"><i class="ti ti-x"></i></button>
         </div>
-        <div class="rowline"><span>الزبون</span><b>{{ det.customer_name }} · <span dir="ltr">{{ det.customer_phone }}</span></b></div>
-        <div class="rowline"><span>الجهاز</span><b>{{ det.make }} {{ det.model }} <span v-if="det.imei" class="muted">({{ det.imei }})</span></b></div>
-        <div class="rowline"><span>العطل</span><b>{{ det.repair_type?.name || '—' }}</b></div>
-        <div class="rowline"><span>السعر / الضمان</span><b>{{ det.price ? fmt(det.price)+' ر.س' : '—' }} · {{ det.warranty_months || 0 }} أشهر</b></div>
+        <div class="rowline"><span>{{ tr('الزبون') }}</span><b>{{ det.customer_name }} · <span dir="ltr">{{ det.customer_phone }}</span></b></div>
+        <div class="rowline"><span>{{ tr('الجهاز') }}</span><b>{{ det.make }} {{ det.model }} <span v-if="det.imei" class="muted">({{ det.imei }})</span></b></div>
+        <div class="rowline"><span>{{ tr('العطل') }}</span><b>{{ det.repair_type?.name || '—' }}</b></div>
+        <div class="rowline"><span>{{ tr('السعر / الضمان') }}</span><b>{{ det.price ? fmt(det.price)+' '+tr('ر.س') : '—' }} · {{ det.warranty_months || 0 }} {{ tr('أشهر') }}</b></div>
         <div v-if="det.description" class="note">{{ det.description }}</div>
 
-        <label style="margin-top:16px">تغيير الحالة</label>
+        <label style="margin-top:16px">{{ tr('تغيير الحالة') }}</label>
         <div class="g2">
-          <select v-model="newStatus"><option v-for="st in statuses" :key="st.key" :value="st.key">{{ st.label }}</option></select>
-          <button class="btn btn-accent" @click="changeStatus"><i class="ti ti-check"></i> تحديث</button>
+          <select v-model="newStatus"><option v-for="st in statuses" :key="st.key" :value="st.key">{{ tr(st.label) }}</option></select>
+          <button class="btn btn-accent" @click="changeStatus"><i class="ti ti-check"></i> {{ tr('تحديث') }}</button>
         </div>
 
         <a v-if="waLink" :href="waLink" target="_blank" class="btn btn-wa btn-block" style="margin-top:10px">
-          <i class="ti ti-brand-whatsapp"></i> إشعار الزبون بالحالة عبر واتساب
+          <i class="ti ti-brand-whatsapp"></i> {{ tr('إشعار الزبون بالحالة عبر واتساب') }}
         </a>
 
-        <div class="sec-t" style="margin-top:20px">سجل الحالات</div>
+        <div class="sec-t" style="margin-top:20px">{{ tr('سجل الحالات') }}</div>
         <div class="tl">
           <div v-for="e in det.events || []" :key="e.id" class="ev">
             <span class="dot"></span>
-            <div><b>{{ label(e.status) }}</b><span v-if="e.note" class="muted"> — {{ e.note }}</span><div class="muted">{{ e.created_at?.slice(0,16).replace('T',' ') }}</div></div>
+            <div><b>{{ tr(label(e.status)) }}</b><span v-if="e.note" class="muted"> — {{ e.note }}</span><div class="muted">{{ e.created_at?.slice(0,16).replace('T',' ') }}</div></div>
           </div>
         </div>
 
-        <button class="btn btn-out btn-block" style="margin-top:18px;color:var(--accent)" @click="remove"><i class="ti ti-trash"></i> حذف التذكرة</button>
+        <button class="btn btn-out btn-block" style="margin-top:18px;color:var(--accent)" @click="remove"><i class="ti ti-trash"></i> {{ tr('حذف التذكرة') }}</button>
       </div>
     </div>
   </DashShell>
@@ -69,6 +69,7 @@
 const { api } = useApi()
 const { confirmDlg } = useConfirm()
 const { settings, loadSettings } = useSettings()
+const { t: tr, isEn } = useI18n()
 const route = useRoute()
 
 const tickets = ref([])
@@ -125,7 +126,7 @@ async function changeStatus() {
   await open(sel.value); await load()
 }
 async function remove() {
-  if (!await confirmDlg('حذف التذكرة', 'لا يمكن التراجع عن هذا الإجراء')) return
+  if (!await confirmDlg(tr('حذف التذكرة'), tr('لا يمكن التراجع عن هذا الإجراء'))) return
   await api('/dashboard/tickets/' + sel.value.id, { method: 'DELETE' })
   sel.value = null; await load()
 }

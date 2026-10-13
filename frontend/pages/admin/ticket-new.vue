@@ -1,58 +1,58 @@
 <template>
   <DashShell active="ticket-new">
     <div class="ph">
-      <div><div class="page-title">تذكرة تصليح جديدة</div><p class="page-sub">سجّل جهاز الزبون وافتح تذكرة</p></div>
-      <NuxtLink to="/admin/tickets" class="btn btn-out"><i class="ti ti-arrow-right"></i> رجوع</NuxtLink>
+      <div><div class="page-title">{{ tr('تذكرة تصليح جديدة') }}</div><p class="page-sub">{{ tr('سجّل جهاز الزبون وافتح تذكرة') }}</p></div>
+      <NuxtLink to="/admin/tickets" class="btn btn-out"><i class="ti ti-arrow-right"></i> {{ tr('رجوع') }}</NuxtLink>
     </div>
 
     <div v-if="done" class="ok-box" style="max-width:520px">
       <i class="ti ti-circle-check" style="font-size:26px"></i>
-      <div style="margin-top:8px">تم فتح التذكرة <b>{{ done }}</b> بنجاح</div>
+      <div style="margin-top:8px">{{ tr('تم فتح التذكرة') }} <b>{{ done }}</b></div>
       <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
-        <NuxtLink to="/admin/tickets" class="btn btn-out">عرض التذاكر</NuxtLink>
-        <button class="btn btn-accent" @click="reset">تذكرة أخرى</button>
+        <NuxtLink to="/admin/tickets" class="btn btn-out">{{ tr('عرض التذاكر') }}</NuxtLink>
+        <button class="btn btn-accent" @click="reset">{{ tr('تذكرة أخرى') }}</button>
       </div>
     </div>
 
     <div v-else class="cols">
       <div class="panel">
-        <div class="sec-t"><i class="ti ti-user" style="color:var(--accent)"></i> بيانات الزبون والجهاز</div>
+        <div class="sec-t"><i class="ti ti-user" style="color:var(--accent)"></i> {{ tr('بيانات الزبون والجهاز') }}</div>
         <div class="g2 frow">
-          <div><label>اسم الزبون *</label><input v-model="f.customer_name" placeholder="الاسم الكامل" /></div>
-          <div><label>رقم الجوال *</label><input v-model="f.customer_phone" placeholder="05xxxxxxxx" dir="ltr" style="text-align:right" /></div>
+          <div><label>{{ tr('اسم الزبون *') }}</label><input v-model="f.customer_name" :placeholder="tr('الاسم الكامل')" /></div>
+          <div><label>{{ tr('رقم الجوال *') }}</label><input v-model="f.customer_phone" placeholder="05xxxxxxxx" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
         </div>
         <div class="g2 frow">
-          <div><label>الماركة</label>
+          <div><label>{{ tr('الماركة') }}</label>
             <select v-model="f.make" @change="onMake"><option v-for="m in cat.makes" :key="m.id" :value="m.name">{{ m.name }}</option></select>
           </div>
-          <div><label>الموديل</label>
+          <div><label>{{ tr('الموديل') }}</label>
             <select v-model="f.model"><option v-for="md in models" :key="md.id" :value="md.name">{{ md.name }}</option></select>
           </div>
         </div>
         <div class="g2 frow">
-          <div><label>IMEI / الرقم التسلسلي</label><input v-model="f.imei" placeholder="356..." dir="ltr" style="text-align:right" /></div>
-          <div><label>نوع العطل</label>
-            <select v-model="f.repair_type_id" @change="autoPrice"><option :value="null">— اختر —</option><option v-for="t in cat.repair_types" :key="t.id" :value="t.id">{{ t.name }}</option></select>
+          <div><label>{{ tr('IMEI / الرقم التسلسلي') }}</label><input v-model="f.imei" placeholder="356..." dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+          <div><label>{{ tr('نوع العطل') }}</label>
+            <select v-model="f.repair_type_id" @change="autoPrice"><option :value="null">{{ tr('— اختر —') }}</option><option v-for="t in cat.repair_types" :key="t.id" :value="t.id">{{ t.name }}</option></select>
           </div>
         </div>
-        <div class="frow"><label>وصف المشكلة</label><textarea v-model="f.description" rows="3" placeholder="مثال: الشاشة مكسورة واللمس لا يعمل..."></textarea></div>
+        <div class="frow"><label>{{ tr('وصف المشكلة') }}</label><textarea v-model="f.description" rows="3" :placeholder="tr('مثال: الشاشة مكسورة واللمس لا يعمل...')"></textarea></div>
       </div>
 
       <div class="panel">
-        <div class="sec-t"><i class="ti ti-receipt" style="color:var(--accent)"></i> السعر والإسناد</div>
-        <div class="frow"><label>السعر التقديري (ر.س)</label><input v-model.number="f.price" type="number" dir="ltr" style="text-align:right" /></div>
-        <div class="frow"><label>الضمان (أشهر)</label>
-          <select v-model.number="f.warranty_months"><option :value="6">٦ أشهر</option><option :value="3">٣ أشهر</option><option :value="1">شهر واحد</option><option :value="0">بدون</option></select>
+        <div class="sec-t"><i class="ti ti-receipt" style="color:var(--accent)"></i> {{ tr('السعر والإسناد') }}</div>
+        <div class="frow"><label>{{ tr('السعر التقديري (ر.س)') }}</label><input v-model.number="f.price" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+        <div class="frow"><label>{{ tr('الضمان (أشهر)') }}</label>
+          <select v-model.number="f.warranty_months"><option :value="6">{{ tr('٦ أشهر') }}</option><option :value="3">{{ tr('٣ أشهر') }}</option><option :value="1">{{ tr('شهر واحد') }}</option><option :value="0">{{ tr('بدون') }}</option></select>
         </div>
-        <div class="frow"><label>إسناد إلى فني</label>
-          <select v-model="f.technician_id"><option :value="null">— بدون —</option><option v-for="t in techs" :key="t.id" :value="t.id">{{ t.name }}</option></select>
+        <div class="frow"><label>{{ tr('إسناد إلى فني') }}</label>
+          <select v-model="f.technician_id"><option :value="null">{{ tr('— بدون —') }}</option><option v-for="t in techs" :key="t.id" :value="t.id">{{ t.name }}</option></select>
         </div>
-        <div class="frow"><label>الحالة</label>
-          <select v-model="f.status"><option v-for="st in statuses" :key="st.key" :value="st.key">{{ st.label }}</option></select>
+        <div class="frow"><label>{{ tr('الحالة') }}</label>
+          <select v-model="f.status"><option v-for="st in statuses" :key="st.key" :value="st.key">{{ tr(st.label) }}</option></select>
         </div>
-        <div class="hint"><i class="ti ti-bell"></i> سيصل الزبون رسالة عند فتح التذكرة وكل تغيير للحالة (عند تفعيل واتساب).</div>
+        <div class="hint"><i class="ti ti-bell"></i> {{ tr('سيصل الزبون رسالة عند فتح التذكرة وكل تغيير للحالة (عند تفعيل واتساب).') }}</div>
         <div v-if="err" class="err">{{ err }}</div>
-        <button class="btn btn-accent btn-block btn-lg" :disabled="busy" @click="submit"><i class="ti ti-check"></i> فتح التذكرة</button>
+        <button class="btn btn-accent btn-block btn-lg" :disabled="busy" @click="submit"><i class="ti ti-check"></i> {{ tr('فتح التذكرة') }}</button>
       </div>
     </div>
   </DashShell>
@@ -60,6 +60,7 @@
 
 <script setup>
 const { api } = useApi()
+const { t: tr, isEn } = useI18n()
 const cat = ref({ makes: [], repair_types: [] })
 const techs = ref([])
 const statuses = ref([])

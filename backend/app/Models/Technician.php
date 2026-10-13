@@ -9,7 +9,7 @@ class Technician extends Model
 {
     use BelongsToShop;
 
-    protected $fillable = ['shop_id', 'name', 'phone', 'specialty', 'active'];
+    protected $fillable = ['shop_id', 'name', 'phone', 'email', 'specialty', 'notes', 'active'];
 
     protected $casts = ['active' => 'boolean'];
 
