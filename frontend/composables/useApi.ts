@@ -13,7 +13,12 @@ export function useApi() {
     })
   }
 
+  // نداء الموقع العام لمحل معيّن: /api/shops/{slug}/...
+  function shopApi<T = any>(slug: string, path: string, opts: any = {}): Promise<T> {
+    return api<T>(`/shops/${slug}${path}`, opts)
+  }
+
   const fileUrl = (p: string) => config.public.apiBase.replace('/api', '') + '/storage/' + p
 
-  return { api, token, fileUrl }
+  return { api, shopApi, token, fileUrl }
 }

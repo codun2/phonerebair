@@ -30,8 +30,8 @@ async function submit() {
   busy.value = true
   error.value = ''
   try {
-    await login(email.value, password.value)
-    await navigateTo('/admin')
+    const r = await login(email.value, password.value)
+    await navigateTo(r?.user?.role === 'super_admin' ? '/super' : '/admin')
   } catch (e) {
     error.value = e?.data?.message || 'بيانات الدخول غير صحيحة'
   } finally { busy.value = false }
