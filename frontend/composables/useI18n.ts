@@ -631,6 +631,7 @@ const DICT: Record<string, string> = {
   'ماركة': 'brands',
   'لا نتائج لبحثك': 'No results for your search',
   'انتهت الجلسة — يرجى تسجيل الدخول مجدداً': 'Session expired — please sign in again',
+  'تعذّر تحميل الماركات — تحقق من الاتصال': 'Could not load brands — check your connection',
 }
 
 export function useI18n() {

@@ -7,7 +7,7 @@ const PRECACHE = self.__PRECACHE__ || { version: 'dev', files: [] }
 const SHELL = 'pr-shell-' + PRECACHE.version
 const RUNTIME = 'pr-runtime'
 const API = 'pr-api'
-const API_TIMEOUT = 7000
+const API_TIMEOUT = 12000
 let apiPausedUntil = 0
 
 self.addEventListener('install', (e) => {
@@ -30,8 +30,10 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
+    // إصدار جديد: امسح الصدفة القديمة + بيانات الـ API المخزّنة حتى لا تبقى نسخ قديمة/فارغة.
+    // (التفعيل يحدث فقط بعد جلب sw.js من الشبكة، فالمستخدم متصل وستُعاد التعبئة فوراً)
     for (const k of await caches.keys()) {
-      if (k.startsWith('pr-shell-') && k !== SHELL) await caches.delete(k)
+      if (k !== SHELL) await caches.delete(k)
     }
     await self.clients.claim()
   })())

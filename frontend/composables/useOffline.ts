@@ -271,13 +271,14 @@ async function warmUp(api: (p: string) => Promise<any>, router: any, features: s
   if (!sw.controller) await new Promise((r) => { sw.addEventListener('controllerchange', r, { once: true }); setTimeout(r, 20000) })
   if (!sw.controller) return
   warmedAt = Date.now()
+  const gap = () => new Promise((r) => setTimeout(r, 250)) // لا نُغرق السيرفر — نداء كل ربع ثانية
   const list = [...WARM, ...(features.includes('inventory') ? ['/dashboard/inventory'] : [])]
-  for (const p of list) { try { await api(p) } catch {} }
-  // تفاصيل التذاكر المفتوحة (غير المسلّمة/الملغاة) حتى تفتح دون اتصال
+  for (const p of list) { try { await api(p) } catch {} ; await gap() }
+  // تفاصيل التذاكر المفتوحة (غير المسلّمة/الملغاة) حتى تفتح دون اتصال — عدد محدود وبتمهّل
   try {
     const r = await api('/dashboard/tickets')
-    const open = (r?.tickets || []).filter((t: any) => !['delivered', 'cancelled'].includes(t.status) && !t._pending).slice(0, 60)
-    for (const t of open) { try { await api('/dashboard/tickets/' + t.id) } catch {} }
+    const open = (r?.tickets || []).filter((t: any) => !['delivered', 'cancelled'].includes(t.status) && !t._pending).slice(0, 15)
+    for (const t of open) { try { await api('/dashboard/tickets/' + t.id) } catch {} ; await gap() }
   } catch {}
   // ملفات الصفحات تُحمَّل مسبقاً حتى تفتح أي صفحة دون اتصال
   try {

@@ -5,6 +5,11 @@
       <NuxtLink to="/admin/tickets" class="btn btn-out"><i class="ti ti-arrow-right"></i> {{ tr('رجوع') }}</NuxtLink>
     </div>
 
+    <div v-if="loadErr" class="reload-bar">
+      <i class="ti ti-alert-triangle"></i> {{ tr(loadErr) }}
+      <button class="btn btn-out btn-sm" @click="loadCatalog"><i class="ti ti-refresh"></i> {{ tr('إعادة المحاولة') }}</button>
+    </div>
+
     <div v-if="done" class="ok-box" style="max-width:520px">
       <i class="ti ti-circle-check" style="font-size:26px"></i>
       <div style="margin-top:8px">{{ tr('تم فتح التذكرة') }} <b>{{ done }}</b></div>
@@ -191,11 +196,34 @@ async function submit() {
 }
 function reset() { done.value = ''; doneId.value = null; queued.value = false; picked.value = null; f.value = blank(); cond.value = { screen: '', body: '', camera: '', power: '', note: '' }; onMake() }
 
+const loadErr = ref('')
+
+// محاولة متكررة: السيرفر قد يتأخر لحظة الإقلاع/التحميل المسبق فلا تُترك القوائم فارغة
+async function tryGet(path, tries = 3) {
+  for (let i = 0; i < tries; i++) {
+    try { return await api(path) } catch (e) {
+      if (i === tries - 1) throw e
+      await new Promise(r => setTimeout(r, 700 * (i + 1)))
+    }
+  }
+}
+
+async function loadCatalog() {
+  loadErr.value = ''
+  try {
+    const c = await tryGet('/site/catalog')
+    cat.value = c
+    if (!f.value.make) { f.value.make = c.makes[0]?.name || ''; onMake() }
+  } catch { loadErr.value = 'تعذّر تحميل الماركات — تحقق من الاتصال' }
+}
+
 onMounted(async () => {
-  cat.value = await api('/site/catalog')
-  f.value.make = cat.value.makes[0]?.name || ''; onMake()
-  techs.value = await api('/dashboard/technicians')
-  statuses.value = (await api('/dashboard/tickets')).statuses.filter(s => !['cancelled', 'rejected', 'unrepairable', 'delivered'].includes(s.key))
+  // كل نداء مستقل: فشل واحد لا يُفرّغ البقية
+  await loadCatalog()
+  try { techs.value = await tryGet('/dashboard/technicians') } catch {}
+  try { statuses.value = (await tryGet('/dashboard/tickets')).statuses.filter(s => !['cancelled', 'rejected', 'unrepairable', 'delivered'].includes(s.key)) } catch {}
+  // احتياطي: لو بقيت الحالات فارغة استعمل الافتراضية حتى لا يتعطّل الحفظ
+  if (!statuses.value.length) statuses.value = [{ key: 'received', label: 'مُستلم' }, { key: 'inspecting', label: 'قيد الفحص' }]
 })
 </script>
 
@@ -215,5 +243,7 @@ onMounted(async () => {
 .accs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .accchip { border: 1px solid var(--line); border-radius: 18px; padding: 7px 14px; font-size: 13px; cursor: pointer; user-select: none; }
 .accchip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.reload-bar { display: flex; align-items: center; gap: 10px; background: #FBE9E8; color: #A32020; border: 1px solid #F3C4C4; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.reload-bar .btn-sm { margin-inline-start: auto; padding: 6px 12px; font-size: 12.5px; }
 @media (max-width: 900px) { .cols, .g3 { grid-template-columns: 1fr; } }
 </style>

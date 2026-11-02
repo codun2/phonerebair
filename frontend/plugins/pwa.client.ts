@@ -15,6 +15,18 @@ export default defineNuxtPlugin(() => {
   if (u?.id) off.setUser(u.id)
 
   if (!import.meta.dev && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {})
+    const hadController = !!navigator.serviceWorker.controller
+    let reloading = false
+    // وصل إصدار جديد وتولّى التحكم → أعد التحميل مرة واحدة ليلتقط التطبيق المثبّت الكود الجديد
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading || !hadController) return
+      reloading = true
+      window.location.reload()
+    })
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
+      // افحص وجود تحديث عند فتح التطبيق وكل نصف ساعة
+      reg.update().catch(() => {})
+      setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000)
+    }).catch(() => {})
   }
 })
