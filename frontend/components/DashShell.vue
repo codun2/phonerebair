@@ -29,27 +29,36 @@
           <span v-if="pending + failed" class="nbadge" :class="{ warn: failed }">{{ pending + failed }}</span>
         </NuxtLink>
       </nav>
-      <div class="side-foot">
-        <button v-if="canInstall" class="sf inst" @click="install"><i class="ti ti-download"></i> {{ t('تثبيت التطبيق على الجهاز') }}</button>
-        <div style="margin-bottom:10px"><LangSwitch /></div>
-        <div class="su2"><div class="av2">{{ (user?.name || 'م').slice(0,2) }}</div><div><b>{{ user?.name || t('المدير') }}</b><small>{{ t('مدير عام') }}</small></div></div>
-        <NuxtLink to="/" class="sf"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</NuxtLink>
-        <button class="sf" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
-      </div>
     </aside>
     <main class="dmain">
-      <div v-if="!online" class="netbar off">
-        <i class="ti ti-wifi-off"></i>
-        <span>{{ t('أنت تعمل دون اتصال — التغييرات تُحفظ على الجهاز وتُرفع تلقائياً عند عودة الإنترنت') }}</span>
-        <NuxtLink v-if="pending" to="/admin/sync" class="nb-l">{{ pending }} {{ t('بالانتظار') }}</NuxtLink>
+      <!-- شريط علوي: المدير والأدوات (نُقلت من الشريط الجانبي) -->
+      <header class="topbar">
+        <div class="tb-user">
+          <div class="av2">{{ (user?.name || 'م').slice(0,2) }}</div>
+          <div><b>{{ user?.name || t('المدير') }}</b><small>{{ t('مدير عام') }}</small></div>
+        </div>
+        <div class="tb-actions">
+          <button v-if="canInstall" class="tb-btn accent" @click="install"><i class="ti ti-download"></i> {{ t('تثبيت التطبيق على الجهاز') }}</button>
+          <LangSwitch />
+          <NuxtLink to="/" class="tb-btn"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</NuxtLink>
+          <button class="tb-btn" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div v-if="!online" class="netbar off">
+          <i class="ti ti-wifi-off"></i>
+          <span>{{ t('أنت تعمل دون اتصال — التغييرات تُحفظ على الجهاز وتُرفع تلقائياً عند عودة الإنترنت') }}</span>
+          <NuxtLink v-if="pending" to="/admin/sync" class="nb-l">{{ pending }} {{ t('بالانتظار') }}</NuxtLink>
+        </div>
+        <div v-else-if="syncing" class="netbar sync"><i class="ti ti-refresh"></i> {{ t('جاري رفع التغييرات المحفوظة...') }}</div>
+        <div v-else-if="failed" class="netbar bad">
+          <i class="ti ti-alert-triangle"></i> {{ failed }} {{ t('عملية رفضها السيرفر') }}
+          <NuxtLink to="/admin/sync" class="nb-l">{{ t('مراجعة') }}</NuxtLink>
+        </div>
+        <div v-else-if="fromCache" class="netbar off"><i class="ti ti-database"></i> {{ t('تعرض آخر بيانات محفوظة — السيرفر لا يستجيب حالياً') }}</div>
+        <slot />
       </div>
-      <div v-else-if="syncing" class="netbar sync"><i class="ti ti-refresh"></i> {{ t('جاري رفع التغييرات المحفوظة...') }}</div>
-      <div v-else-if="failed" class="netbar bad">
-        <i class="ti ti-alert-triangle"></i> {{ failed }} {{ t('عملية رفضها السيرفر') }}
-        <NuxtLink to="/admin/sync" class="nb-l">{{ t('مراجعة') }}</NuxtLink>
-      </div>
-      <div v-else-if="fromCache" class="netbar off"><i class="ti ti-database"></i> {{ t('تعرض آخر بيانات محفوظة — السيرفر لا يستجيب حالياً') }}</div>
-      <slot />
     </main>
     <ConfirmDialog />
   </div>
@@ -91,13 +100,18 @@ nav a:hover { background: var(--ink-2); color: #fff; }
 nav a.on { background: var(--accent); color: #fff; }
 .nbadge { background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; margin-inline-start: auto; }
 nav a.on .nbadge { background: #fff; color: var(--accent); }
-.side-foot { border-top: 1px solid var(--ink-3); padding: 10px 10px 0; margin-top: 8px; flex-shrink: 0; }
-.su2 { display: flex; align-items: center; gap: 10px; padding: 8px 8px 12px; }
-.av2 { width: 34px; height: 34px; border-radius: 50%; background: var(--ink-3); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-.su2 b { color: #fff; font-size: 13px; display: block; } .su2 small { font-size: 11px; color: var(--muted); }
-.sf { display: flex; align-items: center; gap: 11px; padding: 10px 12px; font-size: 13.5px; color: #8A909C; background: none; border: none; cursor: pointer; width: 100%; font-family: inherit; border-radius: 9px; }
-.sf:hover { color: #fff; background: var(--ink-2); }
-.dmain { padding: 26px; background: var(--bg); height: 100vh; overflow-y: auto; }
+.dmain { background: var(--bg); height: 100vh; overflow-y: auto; }
+/* شريط علوي ثابت فوق المحتوى */
+.topbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); padding: 11px 26px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.tb-user { display: flex; align-items: center; gap: 10px; }
+.av2 { width: 38px; height: 38px; border-radius: 50%; background: #E6F1FB; color: var(--accent-d); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.tb-user b { color: var(--ink); font-size: 14px; display: block; line-height: 1.2; } .tb-user small { font-size: 11.5px; color: var(--muted); }
+.tb-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-inline-start: 14px; border-inline-start: 1px solid var(--line); }
+.tb-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; font-size: 13px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; font-family: inherit; text-decoration: none; }
+.tb-btn:hover { background: var(--bg); border-color: #C7CCD6; }
+.tb-btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tb-btn.accent:hover { background: var(--accent-d); }
+.content { padding: 26px; }
 .netbar { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; flex-wrap: wrap; }
 .netbar i { font-size: 18px; }
 .netbar.off { background: #FFF4E0; color: #8A5300; border: 1px solid #F5D9A8; }
@@ -106,5 +120,5 @@ nav a.on .nbadge { background: #fff; color: var(--accent); }
 .nb-l { margin-inline-start: auto; text-decoration: underline; color: inherit; }
 .nbadge.warn { background: #D33; }
 .inst { color: #fff !important; background: var(--accent) !important; margin-bottom: 10px; justify-content: center; }
-@media (max-width: 820px) { .dash { grid-template-columns: 1fr; height: auto; overflow: visible; } .side { position: static; height: auto; overflow: visible; flex-direction: row; flex-wrap: wrap; padding: 12px; } nav { flex-direction: row; flex-wrap: wrap; overflow: visible; } .dmain { height: auto; overflow: visible; } .grp { display: none; } .side-foot { border: none; } .su2 { display: none; } }
+@media (max-width: 820px) { .dash { grid-template-columns: 1fr; height: auto; overflow: visible; } .side { position: static; height: auto; overflow: visible; flex-direction: row; flex-wrap: wrap; padding: 12px; } nav { flex-direction: row; flex-wrap: wrap; overflow: visible; } .dmain { height: auto; overflow: visible; } .grp { display: none; } .topbar { padding: 10px 16px; } .content { padding: 16px; } .tb-actions { padding-inline-start: 0; border: none; } }
 </style>
