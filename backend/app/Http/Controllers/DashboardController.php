@@ -270,8 +270,13 @@ class DashboardController extends Controller
     // ================= المخزون =================
     public function inventory()
     {
-        return response()->json(InventoryItem::orderBy('name')->get()
-            ->map(fn ($i) => $i->append('is_low')));
+        return response()->json(InventoryItem::with('supplierRef:id,name')->orderBy('name')->get()
+            ->map(function ($i) {
+                $i->append('is_low');
+                // اسم المورد: من الملف المربوط، وإلا النص القديم
+                $i->supplier_name = $i->supplierRef?->name ?: $i->supplier;
+                return $i;
+            }));
     }
 
     public function itemMovements(InventoryItem $item)
@@ -675,6 +680,7 @@ class DashboardController extends Controller
             'cost' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'supplier' => 'nullable|string|max:120',
+            'supplier_id' => 'nullable|integer|exists:suppliers,id',
             'low_threshold' => 'nullable|integer|min:0',
         ]);
     }

@@ -32,18 +32,21 @@ const RULES: { m: string; re: RegExp; label: string; create?: boolean }[] = [
   { m: 'PUT', re: /^\/dashboard\/settings$/, label: 'حفظ الإعدادات' },
   { m: 'POST', re: /^\/dashboard\/customers$/, label: 'إضافة عميل', create: true },
   { m: 'PUT', re: /^\/dashboard\/customers\/[^/]+$/, label: 'تعديل عميل' },
+  { m: 'POST', re: /^\/dashboard\/suppliers$/, label: 'إضافة مورّد', create: true },
+  { m: 'PUT', re: /^\/dashboard\/suppliers\/[^/]+$/, label: 'تعديل مورّد' },
 ]
 
 // شاشات تُحمَّل مسبقاً حتى تفتح دون اتصال حتى لو لم يزرها المستخدم
 const WARM = [
   '/me', '/dashboard/stats', '/dashboard/tickets', '/dashboard/technicians', '/dashboard/bookings',
   '/dashboard/repair-types', '/dashboard/price-rules', '/dashboard/catalog', '/dashboard/settings',
-  '/dashboard/customers', '/dashboard/finance', '/dashboard/expenses',
+  '/dashboard/customers', '/dashboard/finance', '/dashboard/expenses', '/dashboard/suppliers',
   '/site/catalog', '/site/settings',
 ]
 const WARM_ROUTES = ['/admin', '/admin/tickets', '/admin/tickets/1', '/admin/ticket-new', '/admin/inventory', '/admin/technicians',
   '/admin/bookings', '/admin/prices', '/admin/catalog', '/admin/settings', '/admin/sync',
-  '/admin/customers', '/admin/customers/1', '/admin/finance', '/admin/print/1']
+  '/admin/customers', '/admin/customers/1', '/admin/customers/new', '/admin/finance', '/admin/print/1',
+  '/admin/suppliers', '/admin/suppliers/1', '/admin/suppliers/new']
 
 const online = ref(true)
 const ops = ref<Op[]>([])
@@ -242,6 +245,7 @@ function overlay(path: string, data: any) {
     return data
   }
   if (p === '/dashboard/customers') return applyList(data, p)
+  if (p === '/dashboard/suppliers') return applyList(data, p)
   if (p === '/dashboard/inventory') return applyList(data, p)
   if (p === '/dashboard/technicians') return applyList(data, p)
   if (p === '/dashboard/bookings') return applyList(data, p)

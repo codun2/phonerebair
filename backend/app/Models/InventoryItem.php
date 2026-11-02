@@ -9,7 +9,12 @@ class InventoryItem extends Model
 {
     use BelongsToShop;
 
-    protected $fillable = ['shop_id', 'name', 'sku', 'compatible', 'qty', 'cost', 'sale_price', 'supplier', 'low_threshold'];
+    protected $fillable = ['shop_id', 'name', 'sku', 'compatible', 'qty', 'cost', 'sale_price', 'supplier', 'supplier_id', 'low_threshold'];
+
+    public function supplierRef()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
 
     protected $casts = ['cost' => 'decimal:2', 'sale_price' => 'decimal:2'];
 

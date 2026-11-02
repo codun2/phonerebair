@@ -14,6 +14,7 @@
         <NuxtLink to="/admin/customers" :class="{ on: active === 'customers' }"><i class="ti ti-address-book"></i> {{ t('العملاء') }}</NuxtLink>
         <NuxtLink to="/admin/finance" :class="{ on: active === 'finance' }"><i class="ti ti-cash-banknote"></i> {{ t('المالية') }}</NuxtLink>
         <NuxtLink v-if="has('inventory')" to="/admin/inventory" :class="{ on: active === 'inventory' }"><i class="ti ti-packages"></i> {{ t('المخزون') }}</NuxtLink>
+        <NuxtLink v-if="has('inventory')" to="/admin/suppliers" :class="{ on: active === 'suppliers' }"><i class="ti ti-truck"></i> {{ t('الموردون') }}</NuxtLink>
         <NuxtLink to="/admin/technicians" :class="{ on: active === 'technicians' }"><i class="ti ti-users"></i> {{ t('الفنيون') }}</NuxtLink>
         <NuxtLink to="/admin/bookings" :class="{ on: active === 'bookings' }">
           <i class="ti ti-calendar"></i> {{ t('الحجوزات') }}

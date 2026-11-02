@@ -95,6 +95,13 @@ Route::middleware(['auth:sanctum', 'tenant', 'idem'])->group(function () {
     Route::put('/dashboard/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'update']);
     Route::delete('/dashboard/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'destroy']);
 
+    // الموردون
+    Route::get('/dashboard/suppliers', [App\Http\Controllers\SupplierController::class, 'index']);
+    Route::post('/dashboard/suppliers', [App\Http\Controllers\SupplierController::class, 'store']);
+    Route::get('/dashboard/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'show']);
+    Route::put('/dashboard/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update']);
+    Route::delete('/dashboard/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'destroy']);
+
     // المالية
     Route::get('/dashboard/finance', [App\Http\Controllers\FinanceController::class, 'summary']);
     Route::get('/dashboard/expenses', [App\Http\Controllers\FinanceController::class, 'expenses']);

@@ -7,10 +7,21 @@
 
     <div class="info"><i class="ti ti-info-circle"></i> {{ tr('أي تعديل هنا يظهر مباشرة للزبون في «حاسبة السعر الفوري».') }}</div>
 
-    <table>
+    <div class="toolbar">
+      <div class="search"><i class="ti ti-search"></i>
+        <input v-model="q" :placeholder="tr('بحث: ماركة / موديل / عطل')" />
+      </div>
+      <div class="view-toggle">
+        <button :class="{ on: view === 'table' }" @click="setView('table')" :title="tr('جدول')"><i class="ti ti-table"></i></button>
+        <button :class="{ on: view === 'cards' }" @click="setView('cards')" :title="tr('شرائح')"><i class="ti ti-layout-grid"></i></button>
+      </div>
+    </div>
+
+    <!-- عرض جدول -->
+    <table v-if="view === 'table'">
       <thead><tr><th>{{ tr('الماركة') }}</th><th>{{ tr('الموديل') }}</th><th>{{ tr('العطل') }}</th><th>{{ tr('السعر') }}</th><th>{{ tr('المدة') }}</th><th>{{ tr('الضمان') }}</th><th></th></tr></thead>
       <tbody>
-        <tr v-for="r in rules" :key="r.id">
+        <tr v-for="r in filtered" :key="r.id">
           <td>{{ r.make?.name }}</td>
           <td>{{ r.model?.name || tr('كل الموديلات') }}</td>
           <td>{{ r.repair_type?.name }}</td>
@@ -22,9 +33,31 @@
             <button class="act danger" @click="remove(r)"><i class="ti ti-trash"></i></button>
           </td>
         </tr>
-        <tr v-if="!rules.length"><td colspan="7" class="empty">{{ tr('لا توجد أسعار بعد') }}</td></tr>
+        <tr v-if="!filtered.length"><td colspan="7" class="empty">{{ q ? tr('لا نتائج لبحثك') : tr('لا توجد أسعار بعد') }}</td></tr>
       </tbody>
     </table>
+
+    <!-- عرض شرائح -->
+    <div v-else class="grid">
+      <div v-for="r in filtered" :key="r.id" class="pcard">
+        <div class="pc-head">
+          <div>
+            <b>{{ r.repair_type?.name }}</b>
+            <div class="pc-dev">{{ r.make?.name }} · {{ r.model?.name || tr('كل الموديلات') }}</div>
+          </div>
+          <div class="pc-acts">
+            <button class="act" @click="edit(r)"><i class="ti ti-edit"></i></button>
+            <button class="act danger" @click="remove(r)"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+        <div class="pc-price">{{ fmt(r.price) }} <span>{{ tr('ر.س') }}</span></div>
+        <div class="pc-meta">
+          <span><i class="ti ti-clock"></i> {{ r.duration_minutes }} {{ tr('د') }}</span>
+          <span><i class="ti ti-shield-check"></i> {{ tr('ضمان') }} {{ r.warranty_months }} {{ tr('ش') }}</span>
+        </div>
+      </div>
+      <div v-if="!filtered.length" class="empty" style="grid-column:1/-1">{{ q ? tr('لا نتائج لبحثك') : tr('لا توجد أسعار بعد') }}</div>
+    </div>
 
     <div v-if="form" class="ov" @click.self="form = null">
       <div class="modal">
@@ -57,9 +90,17 @@ const rules = ref([])
 const cat = ref({ makes: [], repair_types: [] })
 const form = ref(null)
 const err = ref('')
+const q = ref('')
+const view = ref('table')
 const fmt = (n) => Number(n).toLocaleString('ar-EG')
 
 const modelsFor = computed(() => cat.value.makes.find(m => m.id === form.value?.make_id)?.models || [])
+const filtered = computed(() => {
+  const s = q.value.trim().toLowerCase()
+  if (!s) return rules.value
+  return rules.value.filter(r => [r.make?.name, r.model?.name, r.repair_type?.name].some(x => (x || '').toLowerCase().includes(s)))
+})
+function setView(v) { view.value = v; if (import.meta.client) try { localStorage.setItem('pr_prices_view', v) } catch {} }
 
 async function load() { rules.value = await api('/dashboard/price-rules') }
 function openNew() { err.value = ''; form.value = { make_id: null, car_model_id: null, repair_type_id: null, price: null, duration_minutes: 45, warranty_months: 3 } }
@@ -88,12 +129,34 @@ async function remove(r) {
   if (!await confirmDlg(tr('حذف السعر'), `${r.make?.name} - ${r.repair_type?.name}`)) return
   await api('/dashboard/price-rules/' + r.id, { method: 'DELETE' }); await load()
 }
-onMounted(async () => { await load(); cat.value = await api('/site/catalog') })
+onMounted(async () => {
+  if (import.meta.client) try { view.value = localStorage.getItem('pr_prices_view') || 'table' } catch {}
+  await load(); cat.value = await api('/site/catalog')
+})
 </script>
 
 <style scoped>
 .ph { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
 .info { background: #E6F1FB; color: var(--accent-d); padding: 12px 15px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; display: flex; gap: 8px; }
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.search { position: relative; flex: 1; max-width: 420px; }
+.search i { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.search input { width: 100%; padding-inline-start: 36px; }
+.view-toggle { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; margin-inline-start: auto; }
+.view-toggle button { width: 40px; height: 40px; border: none; background: none; cursor: pointer; color: var(--muted); font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.view-toggle button.on { background: var(--accent); color: #fff; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.pcard { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; transition: box-shadow .15s, transform .15s; }
+.pcard:hover { box-shadow: 0 8px 22px rgba(20,33,58,.08); transform: translateY(-2px); }
+.pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.pc-head b { font-size: 15px; }
+.pc-dev { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.pc-acts { display: flex; }
+.pc-acts .act { margin-inline-start: 4px; width: 30px; height: 30px; font-size: 14px; }
+.pc-price { font-size: 26px; font-weight: 800; color: var(--accent-d); margin: 14px 0 10px; }
+.pc-price span { font-size: 13px; font-weight: 600; color: var(--muted); }
+.pc-meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); }
+.pc-meta i { margin-inline-end: 3px; }
 .ov { position: fixed; inset: 0; background: rgba(20,30,50,.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
 .modal { background: #fff; border-radius: 14px; padding: 22px; width: 480px; max-width: 92vw; }
 </style>

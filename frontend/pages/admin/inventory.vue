@@ -15,7 +15,7 @@
         <tr v-for="it in filtered" :key="it.id">
           <td><b>{{ it.name }}</b><div class="muted">{{ it.sku }}</div></td>
           <td>{{ it.compatible || '—' }}</td>
-          <td>{{ it.supplier || '—' }}</td>
+          <td>{{ it.supplier_name || '—' }}</td>
           <td><b>{{ it.qty }}</b></td>
           <td>{{ it.cost ? fmt(it.cost) : '—' }}</td>
           <td>{{ it.sale_price ? fmt(it.sale_price) : '—' }}</td>
@@ -41,7 +41,13 @@
           <div><label>{{ t('التوافق') }}</label><input v-model="form.compatible" placeholder="iPhone 14" /></div>
         </div>
         <div class="g2 frow">
-          <div><label>{{ t('المورّد') }}</label><input v-model="form.supplier" :placeholder="t('اسم المورّد')" /></div>
+          <div><label>{{ t('المورّد') }}</label>
+            <select v-model="form.supplier_id">
+              <option :value="null">{{ t('— بدون —') }}</option>
+              <option v-for="sp in suppliers" :key="sp.id" :value="sp.id">{{ sp.name }}</option>
+            </select>
+            <NuxtLink to="/admin/suppliers/new" class="link" style="font-size:12px">+ {{ t('مورّد جديد') }}</NuxtLink>
+          </div>
           <div v-if="!form.id"><label>{{ t('الكمية الافتتاحية') }}</label><input v-model.number="form.qty" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
           <div v-else><label>{{ t('الكمية') }}</label><input :value="form.qty" disabled :title="t('تتغير عبر الحركات فقط')" /></div>
         </div>
@@ -113,6 +119,7 @@ const { confirmDlg } = useConfirm()
 const { has, ensure } = useFeatures()
 const { t, isEn } = useI18n()
 const items = ref([])
+const suppliers = ref([])
 const form = ref(null)
 const mv = ref(null)
 const log = ref(null)
@@ -124,11 +131,14 @@ const fmt = (n) => Number(n).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
 const filtered = computed(() => {
   const s = q.value.trim().toLowerCase()
   if (!s) return items.value
-  return items.value.filter((i) => [i.name, i.sku, i.compatible, i.supplier].some((x) => (x || '').toLowerCase().includes(s)))
+  return items.value.filter((i) => [i.name, i.sku, i.compatible, i.supplier_name].some((x) => (x || '').toLowerCase().includes(s)))
 })
 
-async function load() { items.value = await api('/dashboard/inventory') }
-function openNew() { err.value = ''; form.value = { name: '', sku: '', compatible: '', supplier: '', qty: 0, cost: null, sale_price: null, low_threshold: 3 } }
+async function load() {
+  items.value = await api('/dashboard/inventory')
+  try { suppliers.value = await api('/dashboard/suppliers') } catch {}
+}
+function openNew() { err.value = ''; form.value = { name: '', sku: '', compatible: '', supplier_id: null, qty: 0, cost: null, sale_price: null, low_threshold: 3 } }
 function edit(it) { err.value = ''; form.value = { ...it } }
 function openMove(it) { errMv.value = ''; mv.value = { item: it, type: 'purchase', qty: null, unit_cost: it.cost, note: '' } }
 async function openLog(it) { log.value = await api('/dashboard/inventory/' + it.id + '/movements') }
