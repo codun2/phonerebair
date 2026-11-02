@@ -627,6 +627,10 @@ const DICT: Record<string, string> = {
   'النوع': 'Type',
   'بواسطة': 'By',
   'لا حركات بعد': 'No movements yet',
+  'بحث عن ماركة أو موديل': 'Search brand or model',
+  'ماركة': 'brands',
+  'لا نتائج لبحثك': 'No results for your search',
+  'انتهت الجلسة — يرجى تسجيل الدخول مجدداً': 'Session expired — please sign in again',
 }
 
 export function useI18n() {

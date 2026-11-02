@@ -11,11 +11,19 @@
       </form>
     </div>
 
+    <div class="toolbar" v-if="makes.length">
+      <div class="search"><i class="ti ti-search"></i>
+        <input v-model="q" :placeholder="t('بحث عن ماركة أو موديل')" />
+      </div>
+      <span class="count">{{ filtered.length }} / {{ makes.length }} {{ t('ماركة') }}</span>
+    </div>
+
     <div v-if="pending" class="empty">{{ t('جارِ التحميل…') }}</div>
     <div v-else-if="!makes.length" class="empty">{{ t('لا توجد ماركات بعد — أضف أول ماركة فوق') }}</div>
+    <div v-else-if="!filtered.length" class="empty">{{ t('لا نتائج لبحثك') }}</div>
 
     <div class="mgrid">
-      <div v-for="m in makes" :key="m.id" class="mcard">
+      <div v-for="m in filtered" :key="m.id" class="mcard">
         <div class="mhead">
           <template v-if="editMake?.id === m.id">
             <div class="editrow">
@@ -68,6 +76,14 @@ const editModel = ref(null)
 const newMake = ref('')
 const pending = ref(true)
 const busy = ref(false)
+const q = ref('')
+
+const filtered = computed(() => {
+  const s = q.value.trim().toLowerCase()
+  if (!s) return makes.value
+  return makes.value.filter((m) =>
+    m.name.toLowerCase().includes(s) || (m.models || []).some((mo) => mo.name.toLowerCase().includes(s)))
+})
 
 async function load() {
   makes.value = await api('/dashboard/catalog')
@@ -106,6 +122,11 @@ onMounted(load)
 </script>
 
 <style scoped>
+.toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+.search { position: relative; flex: 1; max-width: 420px; }
+.search i { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.search input { width: 100%; padding-inline-start: 36px; }
+.count { color: var(--muted); font-size: 13px; }
 .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .mcard { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
 .mhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }

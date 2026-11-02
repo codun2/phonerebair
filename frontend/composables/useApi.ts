@@ -16,6 +16,18 @@ export function useApi() {
           off.fromCache.value = response.headers.get('X-Pr-Cache') === 'fallback'
         }
       },
+      onResponseError({ response }: any) {
+        // جلسة منتهية: التوكن لم يعد صالحاً → تنظيف وإرجاع لتسجيل الدخول
+        // (نتجاهلها دون اتصال لأن 401 قد تكون من الكاش، ونتجاهل نداء الدخول نفسه)
+        if (import.meta.client && response?.status === 401 && token.value
+            && navigator.onLine && !path.startsWith('/login')) {
+          token.value = null
+          off.clearApiCache()
+          if (!useRoute().path.startsWith('/login')) {
+            navigateTo('/login?expired=1', { replace: true })
+          }
+        }
+      },
     })
   }
 
