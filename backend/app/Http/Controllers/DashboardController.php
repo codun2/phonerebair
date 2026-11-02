@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\StockMovement;
+use App\Models\TicketPart;
 use App\Models\CarModel;
 use App\Models\InventoryItem;
 use App\Models\Make;
@@ -30,6 +34,9 @@ class DashboardController extends Controller
             'ready' => Ticket::where('status', 'ready')->count(),
             'today_revenue' => (float) $todayRevenue,
             'low_stock' => InventoryItem::whereColumn('qty', '<=', 'low_threshold')->count(),
+            'month_revenue' => (float) Payment::whereBetween('paid_at', [now()->startOfMonth(), now()])->sum('amount'),
+            'debts' => (float) (Ticket::whereNotIn('status', ['cancelled', 'rejected', 'unrepairable'])->sum('price') - Payment::sum('amount')),
+            'overdue' => Ticket::whereIn('status', Ticket::OPEN_STATUSES)->whereDate('promised_at', '<', today())->count(),
             'new_bookings' => Booking::where('status', 'new')->count(),
             'technicians_active' => Technician::where('active', true)->count(),
             'recent' => Ticket::with(['repairType:id,name', 'technician:id,name'])
@@ -44,13 +51,17 @@ class DashboardController extends Controller
     // ================= التذاكر =================
     public function tickets(Request $request)
     {
-        $q = Ticket::with(['repairType:id,name', 'technician:id,name'])->latest();
+        $q = Ticket::with(['repairType:id,name', 'technician:id,name'])
+            ->withSum('payments as paid_sum', 'amount')->latest();
         if ($request->filled('status')) $q->where('status', $request->input('status'));
+        if ($request->filled('customer_id')) $q->where('customer_id', $request->input('customer_id'));
+        if ($request->boolean('due')) $q->whereNotNull('price'); // الديون تُرشَّح بعد الحساب
         if ($s = $request->input('search')) {
             $q->where(fn ($w) => $w->where('ticket_no', 'like', "%$s%")
                 ->orWhere('customer_name', 'like', "%$s%")
                 ->orWhere('customer_phone', 'like', "%$s%")
-                ->orWhere('imei', 'like', "%$s%"));
+                ->orWhere('imei', 'like', "%$s%")
+                ->orWhere('serial', 'like', "%$s%"));
         }
 
         return response()->json([
@@ -63,18 +74,138 @@ class DashboardController extends Controller
 
     public function ticket(Ticket $ticket)
     {
-        $ticket->load(['repairType', 'technician', 'media', 'events.user:id,name']);
+        $ticket->load(['repairType', 'technician', 'media', 'events.user:id,name',
+            'customer', 'parts.item:id,name,qty', 'payments.user:id,name']);
+        $ticket->append(['paid', 'balance', 'parts_cost', 'warranty_until']);
+        $ticket->has_password = filled($ticket->getRawOriginal('device_password'));
 
         return response()->json([
             'ticket' => $ticket,
             'status_label' => Ticket::STATUS_LABELS[$ticket->status] ?? $ticket->status,
             'statuses' => $this->statusList(),
+            'payment_methods' => collect(Payment::METHODS)->map(fn ($m) => ['key' => $m, 'label' => Payment::METHOD_LABELS[$m]])->values(),
         ]);
+    }
+
+    /** كلمة مرور الجهاز — تُطلب عند الحاجة فقط ولا تخرج مع باقي البيانات */
+    public function ticketPassword(Ticket $ticket)
+    {
+        return response()->json(['password' => $ticket->device_password]);
+    }
+
+    /** توثيق موافقة/رفض العميل على التكلفة */
+    public function ticketApproval(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'approved' => 'required|boolean',
+            'via' => 'required|in:in_person,phone,whatsapp',
+            'price' => 'nullable|numeric|min:0',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $via = ['in_person' => 'حضورياً', 'phone' => 'هاتفياً', 'whatsapp' => 'واتساب'][$data['via']];
+        $note = $data['note'] ?? null;
+        if ($data['approved']) {
+            $ticket->update([
+                'approved_at' => now(), 'approved_by' => $request->user()->id, 'approval_via' => $data['via'],
+                'price' => $data['price'] ?? $ticket->price ?? $ticket->estimated_cost,
+                'status' => in_array($ticket->status, ['received', 'inspecting', 'awaiting_approval']) ? 'in_repair' : $ticket->status,
+            ]);
+            $this->logEvent($ticket, $ticket->status, 'وافق العميل على التكلفة (' . $via . ')' . ($note ? ' — ' . $note : ''), $request->user()->id);
+        } else {
+            $ticket->update(['status' => 'rejected', 'approval_via' => $data['via']]);
+            $this->logEvent($ticket, 'rejected', 'رفض العميل التكلفة (' . $via . ')' . ($note ? ' — ' . $note : ''), $request->user()->id);
+        }
+
+        return response()->json(['message' => 'تم التوثيق', 'ticket' => $ticket->fresh()]);
+    }
+
+    // ================= قطع الغيار المستخدمة بالتذكرة =================
+
+    /** إضافة قطعة للتذكرة: تخصم من المخزون وتسجَّل الحركة مربوطة بالتذكرة */
+    public function addTicketPart(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'inventory_item_id' => 'required|integer',
+            'qty' => 'required|integer|min:1|max:1000',
+            'unit_price' => 'nullable|numeric|min:0',
+        ]);
+
+        $item = InventoryItem::findOrFail($data['inventory_item_id']);
+        if ($item->qty < $data['qty']) {
+            return response()->json(['message' => "الكمية غير كافية — المتوفر {$item->qty} فقط. سجّل توريداً أو حوّل التذكرة إلى «بانتظار قطعة غيار»."], 422);
+        }
+
+        $part = DB::transaction(function () use ($data, $item, $ticket, $request) {
+            $item->move('use', -$data['qty'], [
+                'ticket_id' => $ticket->id,
+                'note' => 'تذكرة ' . $ticket->ticket_no,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return $ticket->parts()->create([
+                'inventory_item_id' => $item->id,
+                'name' => $item->name,
+                'qty' => $data['qty'],
+                'unit_cost' => $item->cost ?? 0,
+                'unit_price' => $data['unit_price'] ?? $item->sale_price ?? $item->cost ?? 0,
+                'user_id' => $request->user()->id,
+            ]);
+        });
+
+        return response()->json($part->load('item:id,name,qty'), 201);
+    }
+
+    /** إزالة قطعة من التذكرة: تُرجَع للمخزون */
+    public function removeTicketPart(Request $request, Ticket $ticket, TicketPart $part)
+    {
+        abort_unless($part->ticket_id === $ticket->id, 404);
+        DB::transaction(function () use ($part, $ticket, $request) {
+            if ($part->inventory_item_id && $part->item) {
+                $part->item->move('return', $part->qty, [
+                    'ticket_id' => $ticket->id,
+                    'note' => 'إرجاع من تذكرة ' . $ticket->ticket_no,
+                    'user_id' => $request->user()->id,
+                ]);
+            }
+            $part->delete();
+        });
+
+        return response()->json(['message' => 'أُعيدت القطعة للمخزون']);
+    }
+
+    // ================= المدفوعات =================
+
+    public function addPayment(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'method' => 'required|in:' . implode(',', Payment::METHODS),
+            'note' => 'nullable|string|max:300',
+        ]);
+
+        $payment = $ticket->payments()->create($data + [
+            'user_id' => $request->user()->id,
+            'paid_at' => now(),
+        ]);
+        $this->logEvent($ticket, $ticket->status, 'دفعة ' . number_format($data['amount'], 2) . ' (' . Payment::METHOD_LABELS[$data['method']] . ')', $request->user()->id);
+
+        return response()->json(['payment' => $payment, 'paid' => $ticket->paid, 'balance' => $ticket->balance], 201);
+    }
+
+    public function removePayment(Request $request, Ticket $ticket, Payment $payment)
+    {
+        abort_unless($payment->ticket_id === $ticket->id, 404);
+        $payment->delete();
+        $this->logEvent($ticket, $ticket->status, 'حذف دفعة ' . number_format((float) $payment->amount, 2), $request->user()->id);
+
+        return response()->json(['message' => 'تم حذف الدفعة', 'paid' => $ticket->paid, 'balance' => $ticket->balance]);
     }
 
     public function storeTicket(Request $request)
     {
         $data = $this->validatedTicket($request);
+        $data['customer_id'] = $this->resolveCustomer($data);
         $data['ticket_no'] = Ticket::nextNumber();
         $data['created_by'] = $request->user()->id;
 
@@ -94,6 +225,7 @@ class DashboardController extends Controller
     public function updateTicket(Request $request, Ticket $ticket)
     {
         $data = $this->validatedTicket($request);
+        $data['customer_id'] = $this->resolveCustomer($data, $ticket);
         $statusChanged = isset($data['status']) && $data['status'] !== $ticket->status;
 
         if ($statusChanged && $data['status'] === 'delivered') {
@@ -142,16 +274,71 @@ class DashboardController extends Controller
             ->map(fn ($i) => $i->append('is_low')));
     }
 
+    public function itemMovements(InventoryItem $item)
+    {
+        return response()->json([
+            'item' => $item->append('is_low'),
+            'movements' => $item->movements()->with(['user:id,name', 'ticket:id,ticket_no'])->limit(100)->get()
+                ->map(fn ($m) => [
+                    'id' => $m->id, 'type' => $m->type,
+                    'type_label' => StockMovement::TYPE_LABELS[$m->type] ?? $m->type,
+                    'qty' => $m->qty, 'unit_cost' => $m->unit_cost, 'note' => $m->note,
+                    'ticket_no' => $m->ticket?->ticket_no, 'ticket_id' => $m->ticket_id,
+                    'user' => $m->user?->name, 'created_at' => $m->created_at->format('Y-m-d H:i'),
+                ]),
+        ]);
+    }
+
+    /** حركة يدوية: توريد/إرجاع/تالف/تسوية جرد */
+    public function storeMovement(Request $request, InventoryItem $item)
+    {
+        $data = $request->validate([
+            'type' => 'required|in:purchase,return,damage,adjust',
+            'qty' => 'required|integer|min:1|max:100000',
+            'unit_cost' => 'nullable|numeric|min:0',
+            'note' => 'nullable|string|max:300',
+        ]);
+
+        // التسوية ترسل الكمية الفعلية الجديدة؛ الباقي كميات تُضاف أو تُخصم
+        $delta = match ($data['type']) {
+            'purchase', 'return' => $data['qty'],
+            'damage' => -$data['qty'],
+            'adjust' => $data['qty'] - $item->qty,
+        };
+        if ($delta < 0 && $item->qty + $delta < 0) {
+            return response()->json(['message' => "الكمية غير كافية — المتوفر {$item->qty} فقط"], 422);
+        }
+
+        $item->move($data['type'], $delta, [
+            'unit_cost' => $data['unit_cost'] ?? null,
+            'note' => $data['note'] ?? null,
+            'user_id' => $request->user()->id,
+        ]);
+        // التوريد بتكلفة جديدة يحدّث تكلفة القطعة
+        if ($data['type'] === 'purchase' && isset($data['unit_cost'])) {
+            $item->update(['cost' => $data['unit_cost']]);
+        }
+
+        return response()->json(['message' => 'سُجّلت الحركة', 'item' => $item->fresh()->append('is_low')], 201);
+    }
+
     public function storeItem(Request $request)
     {
-        return response()->json(InventoryItem::create($this->validatedItem($request)), 201);
+        $item = InventoryItem::create($this->validatedItem($request));
+        if ($item->qty > 0) {
+            $item->movements()->create(['type' => 'purchase', 'qty' => $item->qty,
+                'unit_cost' => $item->cost, 'note' => 'رصيد افتتاحي', 'user_id' => $request->user()->id]);
+        }
+
+        return response()->json($item, 201);
     }
 
     public function updateItem(Request $request, InventoryItem $item)
     {
-        $item->update($this->validatedItem($request));
+        // الكمية لا تتغير من هنا — فقط عبر الحركات حتى يبقى السجل صادقاً
+        $item->update(collect($this->validatedItem($request))->except('qty')->all());
 
-        return response()->json(['message' => 'تم التحديث', 'item' => $item]);
+        return response()->json(['message' => 'تم التحديث', 'item' => $item->fresh()->append('is_low')]);
     }
 
     public function destroyItem(InventoryItem $item)
@@ -369,6 +556,21 @@ class DashboardController extends Controller
     }
 
     // ================= helpers =================
+    /** يربط التذكرة بملف عميل: المحدد، أو بحث بالهاتف، أو إنشاء ملف جديد */
+    private function resolveCustomer(array $data, ?Ticket $ticket = null): ?int
+    {
+        if (!empty($data['customer_id']) && Customer::whereKey($data['customer_id'])->exists()) {
+            return (int) $data['customer_id'];
+        }
+        $phone = trim($data['customer_phone'] ?? '');
+        if ($phone === '') return $ticket?->customer_id;
+
+        $existing = Customer::where('phone', $phone)->first();
+        if ($existing) return $existing->id;
+
+        return Customer::create(['name' => $data['customer_name'], 'phone' => $phone])->id;
+    }
+
     private function ticketRow(Ticket $t): array
     {
         return [
@@ -382,6 +584,12 @@ class DashboardController extends Controller
             'status' => $t->status,
             'status_label' => Ticket::STATUS_LABELS[$t->status] ?? $t->status,
             'technician' => $t->technician?->name,
+            'customer_id' => $t->customer_id,
+            'paid' => isset($t->paid_sum) ? (float) $t->paid_sum : $t->paid,
+            'balance' => round((float) ($t->price ?? 0) - (isset($t->paid_sum) ? (float) $t->paid_sum : $t->paid), 2),
+            'promised_at' => $t->promised_at?->toDateString(),
+            'overdue' => $t->promised_at && in_array($t->status, Ticket::OPEN_STATUSES) && $t->promised_at->isPast(),
+            'warranty_until' => $t->warranty_until,
             'created_at' => $t->created_at->format('Y-m-d H:i'),
         ];
     }
@@ -421,14 +629,23 @@ class DashboardController extends Controller
     private function validatedTicket(Request $request): array
     {
         return $request->validate([
+            'customer_id' => 'nullable|integer',
             'customer_name' => 'required|string|max:120',
             'customer_phone' => 'required|string|max:30',
+            'device_type' => 'nullable|in:phone,tablet,laptop,watch,other',
             'make' => 'nullable|string|max:60',
             'model' => 'nullable|string|max:80',
             'imei' => 'nullable|string|max:40',
+            'serial' => 'nullable|string|max:60',
             'repair_type_id' => 'nullable|exists:repair_types,id',
             'description' => 'nullable|string|max:2000',
+            'condition' => 'nullable|array',
+            'accessories' => 'nullable|array',
+            'accessories.*' => 'string|max:60',
+            'device_password' => 'nullable|string|max:120',
+            'estimated_cost' => 'nullable|numeric|min:0',
             'price' => 'nullable|numeric|min:0',
+            'promised_at' => 'nullable|date',
             'warranty_months' => 'nullable|integer|min:0|max:36',
             'status' => 'required|in:' . implode(',', Ticket::STATUSES),
             'technician_id' => 'nullable|exists:technicians,id',
@@ -443,6 +660,8 @@ class DashboardController extends Controller
             'compatible' => 'nullable|string|max:120',
             'qty' => 'required|integer|min:0',
             'cost' => 'nullable|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'supplier' => 'nullable|string|max:120',
             'low_threshold' => 'nullable|integer|min:0',
         ]);
     }

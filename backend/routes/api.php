@@ -78,6 +78,26 @@ Route::middleware(['auth:sanctum', 'tenant', 'idem'])->group(function () {
     Route::put('/dashboard/tickets/{ticket}', [DashboardController::class, 'updateTicket']);
     Route::post('/dashboard/tickets/{ticket}/status', [DashboardController::class, 'ticketStatus']);
     Route::delete('/dashboard/tickets/{ticket}', [DashboardController::class, 'destroyTicket']);
+    Route::get('/dashboard/tickets/{ticket}/password', [DashboardController::class, 'ticketPassword']);
+    Route::post('/dashboard/tickets/{ticket}/approval', [DashboardController::class, 'ticketApproval']);
+    Route::post('/dashboard/tickets/{ticket}/parts', [DashboardController::class, 'addTicketPart']);
+    Route::delete('/dashboard/tickets/{ticket}/parts/{part}', [DashboardController::class, 'removeTicketPart']);
+    Route::post('/dashboard/tickets/{ticket}/payments', [DashboardController::class, 'addPayment']);
+    Route::delete('/dashboard/tickets/{ticket}/payments/{payment}', [DashboardController::class, 'removePayment']);
+
+    // العملاء
+    Route::get('/dashboard/customers', [App\Http\Controllers\CustomerController::class, 'index']);
+    Route::post('/dashboard/customers', [App\Http\Controllers\CustomerController::class, 'store']);
+    Route::get('/dashboard/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'show']);
+    Route::put('/dashboard/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'update']);
+    Route::delete('/dashboard/customers/{customer}', [App\Http\Controllers\CustomerController::class, 'destroy']);
+
+    // المالية
+    Route::get('/dashboard/finance', [App\Http\Controllers\FinanceController::class, 'summary']);
+    Route::get('/dashboard/expenses', [App\Http\Controllers\FinanceController::class, 'expenses']);
+    Route::post('/dashboard/expenses', [App\Http\Controllers\FinanceController::class, 'storeExpense']);
+    Route::put('/dashboard/expenses/{expense}', [App\Http\Controllers\FinanceController::class, 'updateExpense']);
+    Route::delete('/dashboard/expenses/{expense}', [App\Http\Controllers\FinanceController::class, 'destroyExpense']);
 
     // المخزون — ميزة اختيارية لكل محل (feature flag)
     Route::middleware('feature:inventory')->group(function () {
@@ -85,6 +105,8 @@ Route::middleware(['auth:sanctum', 'tenant', 'idem'])->group(function () {
         Route::post('/dashboard/inventory', [DashboardController::class, 'storeItem']);
         Route::put('/dashboard/inventory/{item}', [DashboardController::class, 'updateItem']);
         Route::delete('/dashboard/inventory/{item}', [DashboardController::class, 'destroyItem']);
+        Route::get('/dashboard/inventory/{item}/movements', [DashboardController::class, 'itemMovements']);
+        Route::post('/dashboard/inventory/{item}/movements', [DashboardController::class, 'storeMovement']);
     });
 
     // الفنيون

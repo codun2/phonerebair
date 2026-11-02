@@ -9,30 +9,58 @@ class Ticket extends Model
 {
     use BelongsToShop;
 
-    protected $fillable = ['shop_id', 
-        'ticket_no', 'customer_name', 'customer_phone', 'make', 'model', 'imei',
-        'repair_type_id', 'description', 'price', 'warranty_months', 'status',
+    protected $fillable = ['shop_id',
+        'ticket_no', 'customer_id', 'customer_name', 'customer_phone', 'device_type',
+        'make', 'model', 'imei', 'serial',
+        'repair_type_id', 'description', 'condition', 'accessories', 'device_password',
+        'estimated_cost', 'price', 'promised_at', 'warranty_months', 'status',
+        'approved_at', 'approved_by', 'approval_via',
         'technician_id', 'created_by', 'delivered_at',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'estimated_cost' => 'decimal:2',
+        'condition' => 'array',
+        'accessories' => 'array',
+        'device_password' => 'encrypted',   // لا تُخزَّن أبداً كنص مكشوف
+        'promised_at' => 'date',
+        'approved_at' => 'datetime',
         'delivered_at' => 'datetime',
     ];
 
-    /** حالات التذكرة بالترتيب */
+    protected $hidden = ['device_password']; // لا تخرج في أي JSON إلا عبر نقطة مخصصة
+
+    /** دورة حياة الصيانة بالترتيب الطبيعي */
     public const STATUSES = [
-        'received', 'awaiting_approval', 'in_repair', 'ready', 'delivered', 'cancelled',
+        'draft', 'received', 'inspecting', 'awaiting_approval', 'waiting_part', 'in_repair',
+        'testing', 'ready', 'delivered', 'rejected', 'unrepairable', 'cancelled',
     ];
 
     public const STATUS_LABELS = [
+        'draft' => 'مسودة — استقبال سريع',
         'received' => 'مُستلم',
+        'inspecting' => 'قيد الفحص',
         'awaiting_approval' => 'بانتظار الموافقة',
+        'waiting_part' => 'بانتظار قطعة غيار',
         'in_repair' => 'قيد التصليح',
+        'testing' => 'اختبار نهائي',
         'ready' => 'جاهز للاستلام',
         'delivered' => 'مُسلّم',
+        'rejected' => 'رفض العميل',
+        'unrepairable' => 'تعذّر التصليح',
         'cancelled' => 'ملغى',
     ];
+
+    /** الحالات المفتوحة (جهاز ما زال داخل المحل) */
+    public const OPEN_STATUSES = [
+        'draft', 'received', 'inspecting', 'awaiting_approval', 'waiting_part', 'in_repair', 'testing', 'ready',
+    ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
     public function repairType()
     {
@@ -54,10 +82,45 @@ class Ticket extends Model
         return $this->hasMany(TicketEvent::class)->latest();
     }
 
+    public function parts()
+    {
+        return $this->hasMany(TicketPart::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class)->orderByDesc('paid_at');
+    }
+
+    public function getPaidAttribute(): float
+    {
+        return (float) ($this->relationLoaded('payments')
+            ? $this->payments->sum('amount')
+            : $this->payments()->sum('amount'));
+    }
+
+    public function getBalanceAttribute(): float
+    {
+        return round((float) ($this->price ?? 0) - $this->paid, 2);
+    }
+
+    public function getPartsCostAttribute(): float
+    {
+        $parts = $this->relationLoaded('parts') ? $this->parts : $this->parts()->get();
+        return (float) $parts->sum(fn ($p) => $p->qty * (float) $p->unit_cost);
+    }
+
+    /** نهاية الضمان بعد التسليم */
+    public function getWarrantyUntilAttribute(): ?string
+    {
+        if (! $this->delivered_at || ! $this->warranty_months) return null;
+        return $this->delivered_at->copy()->addMonths((int) $this->warranty_months)->toDateString();
+    }
+
     /** توليد رقم تذكرة تسلسلي مثل RX-10248 */
     public static function nextNumber(): string
     {
-        $last = static::max('id') ?? 0;
+        $last = static::withoutGlobalScopes()->max('id') ?? 0;
         return 'RX-' . (10248 + $last);
     }
 }

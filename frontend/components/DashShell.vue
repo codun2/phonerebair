@@ -11,6 +11,8 @@
         <NuxtLink to="/admin/tickets" :class="{ on: active === 'tickets' }"><i class="ti ti-ticket"></i> {{ t('التذاكر') }}</NuxtLink>
         <NuxtLink to="/admin/ticket-new" :class="{ on: active === 'ticket-new' }"><i class="ti ti-plus"></i> {{ t('تذكرة جديدة') }}</NuxtLink>
         <div class="grp">{{ t('الإدارة') }}</div>
+        <NuxtLink to="/admin/customers" :class="{ on: active === 'customers' }"><i class="ti ti-address-book"></i> {{ t('العملاء') }}</NuxtLink>
+        <NuxtLink to="/admin/finance" :class="{ on: active === 'finance' }"><i class="ti ti-cash-banknote"></i> {{ t('المالية') }}</NuxtLink>
         <NuxtLink v-if="has('inventory')" to="/admin/inventory" :class="{ on: active === 'inventory' }"><i class="ti ti-packages"></i> {{ t('المخزون') }}</NuxtLink>
         <NuxtLink to="/admin/technicians" :class="{ on: active === 'technicians' }"><i class="ti ti-users"></i> {{ t('الفنيون') }}</NuxtLink>
         <NuxtLink to="/admin/bookings" :class="{ on: active === 'bookings' }">

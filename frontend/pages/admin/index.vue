@@ -8,6 +8,10 @@
       <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-cash"></i></div><div class="num">{{ fmt(s.today_revenue) }}</div><div class="lbl">{{ t('إيراد اليوم (ر.س)') }}</div></div>
       <div class="kpi"><div class="ic" style="background:#EEEDFE;color:#534AB7"><i class="ti ti-tool"></i></div><div class="num">{{ s.in_repair ?? '—' }}</div><div class="lbl">{{ t('قيد التصليح الآن') }}</div></div>
       <div class="kpi"><div class="ic" style="background:#FBE9E8;color:var(--accent-d)"><i class="ti ti-alert-triangle"></i></div><div class="num">{{ s.low_stock ?? '—' }}</div><div class="lbl">{{ t('قطع قاربت النفاد') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#E1F5EE;color:var(--green)"><i class="ti ti-chart-bar"></i></div><div class="num">{{ fmt(s.month_revenue) }}</div><div class="lbl">{{ t('محصّل هذا الشهر') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#FBE9E8;color:#A32020"><i class="ti ti-alert-circle"></i></div><div class="num" :style="(s.debts||0) > 0 ? 'color:#A32020' : ''">{{ fmt(s.debts) }}</div><div class="lbl"><NuxtLink to="/admin/finance" class="link">{{ t('ديون العملاء') }}</NuxtLink></div></div>
+      <div class="kpi"><div class="ic" style="background:#FBF1DA;color:#B8861E"><i class="ti ti-clock-exclamation"></i></div><div class="num">{{ s.overdue ?? '—' }}</div><div class="lbl">{{ t('تذاكر متأخرة عن موعدها') }}</div></div>
+      <div class="kpi"><div class="ic" style="background:#E6F1FB;color:var(--accent)"><i class="ti ti-address-book"></i></div><div class="num" style="font-size:17px;padding-top:6px"><NuxtLink to="/admin/customers" class="link">{{ t('العملاء') }} ←</NuxtLink></div><div class="lbl">{{ t('ملفات وسجل الأجهزة') }}</div></div>
     </div>
 
     <div class="cols">
@@ -53,6 +57,7 @@ onMounted(async () => { try { s.value = await api('/dashboard/stats') } catch {}
 
 <style scoped>
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px; }
+.kpis .kpi:nth-child(n+5) { padding: 14px 18px; } 
 .kpi { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
 .ic { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; }
 .num { font-size: 28px; font-weight: 800; }

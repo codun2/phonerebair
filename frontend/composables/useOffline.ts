@@ -30,16 +30,20 @@ const RULES: { m: string; re: RegExp; label: string; create?: boolean }[] = [
   { m: 'DELETE', re: /^\/dashboard\/technicians\/[^/]+$/, label: 'حذف فني' },
   { m: 'POST', re: /^\/dashboard\/bookings\/[^/]+\/status$/, label: 'تحديث حجز' },
   { m: 'PUT', re: /^\/dashboard\/settings$/, label: 'حفظ الإعدادات' },
+  { m: 'POST', re: /^\/dashboard\/customers$/, label: 'إضافة عميل', create: true },
+  { m: 'PUT', re: /^\/dashboard\/customers\/[^/]+$/, label: 'تعديل عميل' },
 ]
 
 // شاشات تُحمَّل مسبقاً حتى تفتح دون اتصال حتى لو لم يزرها المستخدم
 const WARM = [
   '/me', '/dashboard/stats', '/dashboard/tickets', '/dashboard/technicians', '/dashboard/bookings',
   '/dashboard/repair-types', '/dashboard/price-rules', '/dashboard/catalog', '/dashboard/settings',
+  '/dashboard/customers', '/dashboard/finance', '/dashboard/expenses',
   '/site/catalog', '/site/settings',
 ]
-const WARM_ROUTES = ['/admin', '/admin/tickets', '/admin/ticket-new', '/admin/inventory', '/admin/technicians',
-  '/admin/bookings', '/admin/prices', '/admin/catalog', '/admin/settings', '/admin/sync']
+const WARM_ROUTES = ['/admin', '/admin/tickets', '/admin/tickets/1', '/admin/ticket-new', '/admin/inventory', '/admin/technicians',
+  '/admin/bookings', '/admin/prices', '/admin/catalog', '/admin/settings', '/admin/sync',
+  '/admin/customers', '/admin/customers/1', '/admin/finance', '/admin/print/1']
 
 const online = ref(true)
 const ops = ref<Op[]>([])
@@ -215,7 +219,8 @@ const ticketRow = (o: Op) => ({
   customer_phone: o.body?.customer_phone, device: [o.body?.make, o.body?.model].filter(Boolean).join(' '),
   repair_type: o.meta?.repair_type || null, price: o.body?.price || null, status: o.body?.status || 'received',
   status_label: null, technician: o.meta?.technician || null, created_at: o.created_at.slice(0, 16).replace('T', ' '),
-  _pending: true,
+  paid: 0, balance: o.body?.price || 0, promised_at: o.body?.promised_at || null, overdue: false, warranty_until: null,
+  customer_id: null, _pending: true,
 })
 
 function overlay(path: string, data: any) {
@@ -236,6 +241,7 @@ function overlay(path: string, data: any) {
     if (st) return { ...data, ticket: { ...data.ticket, ...(st.path.endsWith('/status') ? { status: st.body?.status } : st.body) } }
     return data
   }
+  if (p === '/dashboard/customers') return applyList(data, p)
   if (p === '/dashboard/inventory') return applyList(data, p)
   if (p === '/dashboard/technicians') return applyList(data, p)
   if (p === '/dashboard/bookings') return applyList(data, p)

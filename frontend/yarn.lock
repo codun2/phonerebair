@@ -4132,6 +4132,11 @@ prompts@^2.4.2:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
+qrcode-generator@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.npmjs.org/qrcode-generator/-/qrcode-generator-1.5.0.tgz#045b18cdb5fd8d6c7005ba9208bc176b9864ce7d"
+  integrity sha512-sqo7otiDq5rA4djRkFI7IjLQqxRrLpIou0d3rqr03JJLUGf5raPh91xCio+lFFbQf0SlcVckStz0EmDEX3EeZA==
+
 quansync@^0.2.11:
   version "0.2.11"
   resolved "https://registry.npmmirror.com/quansync/-/quansync-0.2.11.tgz#f9c3adda2e1272e4f8cf3f1457b04cbdb4ee692a"
