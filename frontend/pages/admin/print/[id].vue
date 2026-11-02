@@ -84,7 +84,7 @@ const route = useRoute()
 const type = computed(() => ['label', 'invoice'].includes(route.query.type) ? route.query.type : 'receipt')
 const t = ref({})
 
-const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'الكاميرا', power: 'يعمل؟', battery: 'البطارية', note: 'ملاحظة' }
+const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'الكاميرا', power: 'التشغيل', battery: 'البطارية', note: 'ملاحظة' }
 const condEntries = computed(() => Object.entries(t.value.condition || {}).filter(([, v]) => v))
 const money = (n) => Number(n || 0).toLocaleString('ar-EG') + ' ر.س'
 const labor = computed(() => Math.max(0, (Number(t.value.price) || 0) - (t.value.parts || []).reduce((a, p) => a + p.qty * Number(p.unit_price), 0)))

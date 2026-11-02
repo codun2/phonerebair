@@ -273,7 +273,7 @@ const zoom = ref(null)
 const hasInv = ref(false)
 
 const deviceTypes = { phone: 'جوال', tablet: 'تابلت', laptop: 'لابتوب', watch: 'ساعة ذكية', other: 'أخرى' }
-const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'الكاميرا', power: 'يعمل؟', battery: 'البطارية', note: 'ملاحظة' }
+const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'الكاميرا', power: 'التشغيل', battery: 'البطارية', note: 'ملاحظة' }
 const viaLabels = { in_person: 'حضورياً', phone: 'هاتفياً', whatsapp: 'واتساب' }
 
 const money = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG') + ' ' + tr('ر.س')

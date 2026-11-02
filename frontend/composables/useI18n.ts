@@ -501,7 +501,7 @@ const DICT: Record<string, string> = {
   'إظهار': 'Reveal',
   '(محفوظة — اتركها فارغة للإبقاء)': '(saved — leave empty to keep)',
   'حالة الجهاز عند الاستلام': 'Device condition at intake',
-  'الشاشة': 'Screen', 'الهيكل': 'Body', 'الكاميرا': 'Camera', 'يعمل؟': 'Powers on?', 'البطارية': 'Battery', 'ملاحظة': 'Note',
+  'الشاشة': 'Screen', 'الهيكل': 'Body', 'الكاميرا': 'Camera', 'التشغيل': 'Power', 'يعمل؟': 'Powers on?', 'البطارية': 'Battery', 'ملاحظة': 'Note',
   'سليمة': 'OK', 'سليم': 'OK', 'خدوش': 'Scratched', 'مكسورة': 'Broken', 'مكسور': 'Broken', 'لا تعمل': 'Not working', 'لا يعمل': 'Does not power on',
   '— لم يُفحص —': '— not checked —',
   'ملاحظات الحالة (خدوش، كسور...)': 'Condition notes (scratches, cracks...)',

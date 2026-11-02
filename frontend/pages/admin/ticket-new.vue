@@ -136,7 +136,7 @@ const condFields = [
   { key: 'screen', label: 'الشاشة', opts: ['سليمة', 'خدوش', 'مكسورة'] },
   { key: 'body', label: 'الهيكل', opts: ['سليم', 'خدوش', 'مكسور'] },
   { key: 'camera', label: 'الكاميرا', opts: ['سليمة', 'لا تعمل'] },
-  { key: 'power', label: 'يعمل؟', opts: ['يعمل', 'لا يعمل'] },
+  { key: 'power', label: 'التشغيل', opts: ['يعمل', 'لا يعمل'] },
 ]
 const accOptions = ['شاحن', 'كيبل', 'كفر', 'شريحة', 'ذاكرة', 'علبة']
 
