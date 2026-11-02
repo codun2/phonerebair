@@ -62,6 +62,21 @@
           <tr><td colspan="2">المدفوع</td><td>{{ money(t.paid || 0) }}</td></tr>
           <tr class="due" v-if="(t.balance || 0) > 0"><td colspan="2">المتبقي</td><td>{{ money(t.balance) }}</td></tr>
         </table>
+
+        <!-- سجل الدفعات بتواريخها وتسلسلها -->
+        <template v-if="paymentsAsc.length">
+          <div class="sect">سجل الدفعات</div>
+          <table class="lines pays">
+            <tr class="h"><td>#</td><td>التاريخ</td><td>الطريقة</td><td>المبلغ</td></tr>
+            <tr v-for="(p, i) in paymentsAsc" :key="p.id">
+              <td>{{ i + 1 }}</td>
+              <td>{{ (p.paid_at || '').slice(0, 16).replace('T', ' ') }}</td>
+              <td>{{ methodLabel(p.method) }}</td>
+              <td>{{ money(p.amount) }}</td>
+            </tr>
+          </table>
+        </template>
+
         <div class="terms" v-if="t.warranty_months">
           <b>الضمان:</b> {{ t.warranty_months }} أشهر على الإصلاح{{ t.warranty_until ? ' — حتى ' + t.warranty_until : '' }}.
           لا يشمل الضمان الكسر أو السوائل أو سوء الاستخدام.
@@ -71,7 +86,12 @@
       <footer>شكراً لثقتكم — {{ settings.shop_name || '' }}</footer>
     </div>
 
-    <button class="noprint pbtn" @click="doPrint"><i class="ti ti-printer"></i> طباعة</button>
+    <div class="noprint pbtns" v-if="t.id">
+      <button class="pbtn" @click="doPrint"><i class="ti ti-printer"></i> طباعة</button>
+      <button v-if="type !== 'label'" class="pbtn pdf" :disabled="pdfBusy" @click="downloadPdf">
+        <i class="ti" :class="pdfBusy ? 'ti-loader-2 spin' : 'ti-file-download'"></i> {{ pdfBusy ? 'جارٍ التجهيز…' : 'تنزيل PDF' }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -85,7 +105,10 @@ const type = computed(() => ['label', 'invoice'].includes(route.query.type) ? ro
 const t = ref({})
 
 const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'الكاميرا', power: 'التشغيل', battery: 'البطارية', note: 'ملاحظة' }
+const methodLabels = { cash: 'نقدي', card: 'شبكة/بطاقة', transfer: 'تحويل', other: 'أخرى' }
+const methodLabel = (m) => methodLabels[m] || m
 const condEntries = computed(() => Object.entries(t.value.condition || {}).filter(([, v]) => v))
+const paymentsAsc = computed(() => [...(t.value.payments || [])].sort((a, b) => (a.paid_at || '').localeCompare(b.paid_at || '')))
 const money = (n) => Number(n || 0).toLocaleString('ar-EG') + ' ر.س'
 const labor = computed(() => Math.max(0, (Number(t.value.price) || 0) - (t.value.parts || []).reduce((a, p) => a + p.qty * Number(p.unit_price), 0)))
 
@@ -99,6 +122,29 @@ const qrSvg = computed(() => {
 
 function doPrint() { window.print() }
 
+const pdfBusy = ref(false)
+async function downloadPdf() {
+  if (pdfBusy.value) return
+  pdfBusy.value = true
+  try {
+    const html2pdf = (await import('html2pdf.js')).default
+    // تأكد من تحميل الخط العربي قبل الالتقاط حتى لا يخرج بخط بديل
+    if (document.fonts?.ready) await document.fonts.ready
+    const el = document.querySelector('.doc')
+    const docType = type.value === 'invoice' ? 'فاتورة' : 'ايصال'
+    await html2pdf().set({
+      margin: [10, 10, 10, 10],
+      filename: `${docType}-${t.value.ticket_no || ''}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    }).from(el).save()
+  } catch (e) {
+    // احتياطي: نافذة الطباعة (حفظ كـ PDF)
+    window.print()
+  } finally { pdfBusy.value = false }
+}
+
 onMounted(async () => {
   if (!token.value) return navigateTo('/login')
   loadSettings()
@@ -110,7 +156,11 @@ onMounted(async () => {
 
 <style scoped>
 .print-root { font-family: Tajawal, sans-serif; direction: rtl; color: #111; background: #fff; min-height: 100vh; }
-.pbtn { position: fixed; bottom: 18px; inset-inline-start: 18px; padding: 11px 20px; border: none; border-radius: 10px; background: #185FA5; color: #fff; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+.pbtns { position: fixed; bottom: 18px; inset-inline-start: 18px; display: flex; gap: 10px; }
+.pbtn { padding: 11px 20px; border: none; border-radius: 10px; background: #185FA5; color: #fff; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; gap: 8px; align-items: center; box-shadow: 0 4px 14px rgba(20,33,58,.18); }
+.pbtn.pdf { background: #137A4B; }
+.pbtn:disabled { opacity: .7; cursor: default; }
+.spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
 
 /* الملصق: مقاس ~80×50مم */
 .label { width: 80mm; padding: 4mm; display: flex; gap: 4mm; align-items: center; border: 1px dashed #bbb; margin: 10px auto; }
@@ -146,6 +196,10 @@ table.lines.inv td:nth-child(2) { width: 16%; text-align: center; color: #6b7280
 table.lines.inv td:last-child { width: 26%; font-weight: 600; }
 table.lines.inv .tot td { background: #f6f8fa; font-weight: 800; font-size: 14px; border-top: 1.5px solid #185FA5; }
 table.lines.inv .due td { color: #A32020; font-weight: 800; background: #fdf2f2; }
+table.lines.pays { margin-top: 10px; font-size: 12.5px; }
+table.lines.pays .h td { background: #475569; color: #fff; font-weight: 700; }
+table.lines.pays td:first-child { width: 10%; text-align: center; color: #6b7280; }
+table.lines.pays td:last-child { width: 24%; font-weight: 600; }
 .terms { margin-top: 16px; font-size: 11px; color: #444; line-height: 1.8; background: #f8f9fb; border-radius: 8px; padding: 10px 14px; }
 .doc footer { text-align: center; margin-top: 22px; font-size: 12px; color: #666; }
 
