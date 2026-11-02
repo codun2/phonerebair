@@ -46,7 +46,7 @@ const WARM = [
 const WARM_ROUTES = ['/admin', '/admin/tickets', '/admin/tickets/1', '/admin/ticket-new', '/admin/inventory', '/admin/technicians',
   '/admin/bookings', '/admin/prices', '/admin/catalog', '/admin/settings', '/admin/sync',
   '/admin/customers', '/admin/customers/1', '/admin/customers/new', '/admin/finance', '/admin/print/1',
-  '/admin/suppliers', '/admin/suppliers/1', '/admin/suppliers/new']
+  '/admin/suppliers', '/admin/suppliers/1', '/admin/suppliers/new', '/admin/technicians/new']
 
 const online = ref(true)
 const ops = ref<Op[]>([])

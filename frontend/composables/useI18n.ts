@@ -716,6 +716,10 @@ const DICT: Record<string, string> = {
   'ستبقى القطع في المخزون ويُفكّ ربطها به فقط': 'Items stay in stock; only the link is removed',
   'إضافة مورّد': 'Add supplier',
   'تعديل مورّد': 'Edit supplier',
+  'بيانات الفني وتخصصه وحالته في الفريق': 'Technician details, specialty and team status',
+  'أو اكتب تخصصاً آخر': 'or type another specialty',
+  'الفني غير موجود': 'Technician not found',
+  'تعذّر تحميل بيانات الفني': 'Could not load technician',
 }
 
 export function useI18n() {
