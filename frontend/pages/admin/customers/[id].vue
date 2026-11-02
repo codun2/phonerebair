@@ -9,7 +9,7 @@
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <a :href="'https://wa.me/' + intl(c.phone)" target="_blank" class="btn btn-wa"><i class="ti ti-brand-whatsapp"></i> {{ t('واتساب') }}</a>
-          <button class="btn btn-out" @click="startEdit"><i class="ti ti-edit"></i> {{ t('تعديل') }}</button>
+          <NuxtLink :to="'/admin/customers/new?edit=' + c.id" class="btn btn-out"><i class="ti ti-edit"></i> {{ t('تعديل') }}</NuxtLink>
           <NuxtLink to="/admin/customers" class="btn btn-out"><i class="ti ti-arrow-right"></i> {{ t('رجوع') }}</NuxtLink>
         </div>
       </div>
@@ -21,8 +21,12 @@
         <div class="kpi"><div class="ic" style="background:#E4F6EF;color:var(--green)"><i class="ti ti-shield-check"></i></div><div class="num">{{ totals.active_warranties }}</div><div class="lbl">{{ t('ضمانات سارية') }}</div></div>
       </div>
 
-      <div class="panel" v-if="c.address || c.email || c.notes">
+      <div class="panel" v-if="hasInfo">
+        <div class="rowline" v-if="c.customer_type === 'business'"><span>{{ t('نوع العميل') }}</span><b>{{ t('شركة / مؤسسة') }}</b></div>
+        <div class="rowline" v-if="c.company"><span>{{ t('اسم الشركة / المؤسسة') }}</span><b>{{ c.company }}</b></div>
+        <div class="rowline" v-if="c.tax_number"><span>{{ t('الرقم الضريبي') }}</span><b dir="ltr">{{ c.tax_number }}</b></div>
         <div class="rowline" v-if="c.email"><span>{{ t('البريد') }}</span><b dir="ltr">{{ c.email }}</b></div>
+        <div class="rowline" v-if="c.city"><span>{{ t('المدينة') }}</span><b>{{ c.city }}</b></div>
         <div class="rowline" v-if="c.address"><span>{{ t('العنوان') }}</span><b>{{ c.address }}</b></div>
         <div class="note" v-if="c.notes">{{ c.notes }}</div>
       </div>
@@ -53,26 +57,6 @@
         </table>
       </div>
 
-      <div v-if="form" class="ov" @click.self="form = null">
-        <div class="modal">
-          <div class="sec-t">{{ t('تعديل بيانات العميل') }}</div>
-          <div class="g2 frow">
-            <div><label>{{ t('الاسم *') }}</label><input v-model="form.name" /></div>
-            <div><label>{{ t('رقم الجوال *') }}</label><input v-model="form.phone" dir="ltr" /></div>
-          </div>
-          <div class="g2 frow">
-            <div><label>{{ t('جوال إضافي') }}</label><input v-model="form.alt_phone" dir="ltr" /></div>
-            <div><label>{{ t('البريد') }}</label><input v-model="form.email" dir="ltr" /></div>
-          </div>
-          <div class="frow"><label>{{ t('العنوان') }}</label><input v-model="form.address" /></div>
-          <div class="frow"><label>{{ t('ملاحظات وشكاوى') }}</label><textarea v-model="form.notes" rows="3"></textarea></div>
-          <div v-if="err" class="err">{{ err }}</div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-accent" @click="save"><i class="ti ti-check"></i> {{ t('حفظ التعديل') }}</button>
-            <button class="btn btn-out" @click="form = null">{{ t('إلغاء') }}</button>
-          </div>
-        </div>
-      </div>
     </template>
   </DashShell>
 </template>
@@ -84,10 +68,9 @@ const route = useRoute()
 const c = ref({})
 const tickets = ref([])
 const totals = ref({ tickets: 0, charged: 0, paid: 0, balance: 0, active_warranties: 0 })
-const form = ref(null)
-const err = ref('')
 
 const fmt = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
+const hasInfo = computed(() => c.value.customer_type === 'business' || c.value.company || c.value.tax_number || c.value.email || c.value.city || c.value.address || c.value.notes)
 function intl(p) {
   let n = (p || '').replace(/\D/g, '')
   if (n.startsWith('00')) n = n.slice(2)
@@ -99,15 +82,6 @@ async function load() {
   const r = await api('/dashboard/customers/' + route.params.id)
   c.value = r.customer; tickets.value = r.tickets; totals.value = r.totals
 }
-function startEdit() { err.value = ''; form.value = { name: c.value.name, phone: c.value.phone, alt_phone: c.value.alt_phone, email: c.value.email, address: c.value.address, notes: c.value.notes } }
-async function save() {
-  err.value = ''
-  try {
-    await api('/dashboard/customers/' + c.value.id, { method: 'PUT', body: form.value })
-    form.value = null; await load()
-  } catch (e) { err.value = e?.data?.message || t('تعذّر الحفظ') }
-}
-
 onMounted(load)
 </script>
 

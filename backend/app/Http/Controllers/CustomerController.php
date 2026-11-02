@@ -113,10 +113,14 @@ class CustomerController extends Controller
     {
         return $request->validate([
             'name' => 'required|string|max:120',
+            'customer_type' => 'nullable|in:individual,business',
             'phone' => 'required|string|max:30',
             'alt_phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:120',
             'address' => 'nullable|string|max:200',
+            'city' => 'nullable|string|max:80',
+            'company' => 'nullable|string|max:120',
+            'tax_number' => 'nullable|string|max:30',
             'notes' => 'nullable|string|max:2000',
         ]);
     }

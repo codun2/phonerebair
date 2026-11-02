@@ -2,7 +2,7 @@
   <DashShell active="customers">
     <div class="ph">
       <div><div class="page-title">{{ t('العملاء') }}</div><p class="page-sub">{{ t('ملفات العملاء وسجل أجهزتهم وديونهم') }}</p></div>
-      <button class="btn btn-accent" @click="openNew"><i class="ti ti-user-plus"></i> {{ t('عميل جديد') }}</button>
+      <NuxtLink to="/admin/customers/new" class="btn btn-accent"><i class="ti ti-user-plus"></i> {{ t('عميل جديد') }}</NuxtLink>
     </div>
 
     <div class="toolbar">
@@ -27,26 +27,6 @@
       </tbody>
     </table>
 
-    <div v-if="form" class="ov" @click.self="form = null">
-      <div class="modal">
-        <div class="sec-t">{{ t('عميل جديد') }}</div>
-        <div class="g2 frow">
-          <div><label>{{ t('الاسم *') }}</label><input v-model="form.name" /></div>
-          <div><label>{{ t('رقم الجوال *') }}</label><input v-model="form.phone" placeholder="05xxxxxxxx" dir="ltr" /></div>
-        </div>
-        <div class="g2 frow">
-          <div><label>{{ t('جوال إضافي') }}</label><input v-model="form.alt_phone" dir="ltr" /></div>
-          <div><label>{{ t('البريد') }}</label><input v-model="form.email" dir="ltr" /></div>
-        </div>
-        <div class="frow"><label>{{ t('العنوان') }}</label><input v-model="form.address" /></div>
-        <div class="frow"><label>{{ t('ملاحظات') }}</label><textarea v-model="form.notes" rows="2"></textarea></div>
-        <div v-if="err" class="err">{{ err }}</div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-accent" @click="save"><i class="ti ti-check"></i> {{ t('حفظ') }}</button>
-          <button class="btn btn-out" @click="form = null">{{ t('إلغاء') }}</button>
-        </div>
-      </div>
-    </div>
   </DashShell>
 </template>
 
@@ -55,8 +35,6 @@ const { api } = useApi()
 const { t, isEn } = useI18n()
 const customers = ref([])
 const q = ref('')
-const form = ref(null)
-const err = ref('')
 let debounce = null
 
 const fmt = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
@@ -65,15 +43,6 @@ async function load() {
   customers.value = await api('/dashboard/customers' + (q.value.trim() ? '?search=' + encodeURIComponent(q.value.trim()) : ''))
 }
 function onSearch() { clearTimeout(debounce); debounce = setTimeout(load, 350) }
-function openNew() { err.value = ''; form.value = { name: '', phone: '', alt_phone: '', email: '', address: '', notes: '' } }
-async function save() {
-  err.value = ''
-  if (!form.value.name || !form.value.phone) { err.value = t('الاسم ورقم الجوال مطلوبان'); return }
-  try {
-    await api('/dashboard/customers', { method: 'POST', body: form.value })
-    form.value = null; await load()
-  } catch (e) { err.value = e?.data?.message || t('تعذّر الحفظ') }
-}
 
 onMounted(load)
 </script>

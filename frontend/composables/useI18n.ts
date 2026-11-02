@@ -655,6 +655,21 @@ const DICT: Record<string, string> = {
   '— اختر الأعطال —': '— select faults —',
   'بحث عن عطل…': 'Search a fault…',
   'الأعطال': 'Faults',
+  'سجّل بيانات العميل كاملة لمتابعة أجهزته وفواتيره': 'Record full customer details to track their devices and invoices',
+  'نوع العميل': 'Customer type',
+  'فرد': 'Individual',
+  'شركة / مؤسسة': 'Company / business',
+  'البيانات الأساسية': 'Basic info',
+  'بيانات الشركة': 'Company details',
+  'اسم الشركة / المؤسسة': 'Company name',
+  'الرقم الضريبي': 'Tax number',
+  'يظهر في الفاتورة': 'shows on the invoice',
+  'المدينة': 'City',
+  'العنوان التفصيلي': 'Detailed address',
+  'ملاحظات وشكاوى سابقة أو تفضيلات العميل…': 'Notes, past complaints or customer preferences…',
+  'حفظ العميل': 'Save customer',
+  'بعد الحفظ يمكنك فتح تذكرة له مباشرة وتتبّع كل أجهزته.': 'After saving you can open a ticket for them and track all their devices.',
+  'تعذّر تحميل بيانات العميل': 'Could not load customer data',
 }
 
 export function useI18n() {
