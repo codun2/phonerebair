@@ -16,7 +16,7 @@
       <thead><tr><th>{{ tr('التذكرة') }}</th><th>{{ tr('الزبون') }}</th><th>{{ tr('الجهاز / العطل') }}</th><th>{{ tr('السعر') }}</th><th>{{ tr('الحالة') }}</th><th>{{ tr('الفني') }}</th><th>{{ tr('التاريخ') }}</th></tr></thead>
       <tbody>
         <tr v-for="t in tickets" :key="t.id" @click="open(t)" style="cursor:pointer">
-          <td><b style="color:var(--accent-d)">{{ t.ticket_no }}</b></td>
+          <td><b style="color:var(--accent-d)">{{ t.ticket_no }}</b><div v-if="t._pending" class="muted" style="color:#8A5300"><i class="ti ti-cloud-upload"></i> {{ tr('بانتظار الرفع للسيرفر') }}</div></td>
           <td>{{ t.customer_name }}<div class="muted" dir="ltr" style="text-align:right">{{ t.customer_phone }}</div></td>
           <td>{{ t.device }} <span class="muted">· {{ t.repair_type }}</span></td>
           <td>{{ t.price ? fmt(t.price) + ' ' + tr('ر.س') : '—' }}</td>
@@ -118,8 +118,15 @@ function setFilter(f) { filter.value = f; load() }
 
 async function open(t) {
   sel.value = t
-  const r = await api('/dashboard/tickets/' + t.id)
-  det.value = r.ticket; newStatus.value = r.ticket.status
+  try {
+    const r = await api('/dashboard/tickets/' + t.id)
+    det.value = r.ticket
+  } catch {
+    // دون اتصال ولم تُفتح من قبل: نعرض ما في القائمة
+    const [make, ...model] = (t.device || '').split(' ')
+    det.value = { ...t, make, model: model.join(' '), repair_type: t.repair_type ? { name: t.repair_type } : null, events: [] }
+  }
+  newStatus.value = det.value.status
 }
 async function changeStatus() {
   await api('/dashboard/tickets/' + sel.value.id + '/status', { method: 'POST', body: { status: newStatus.value } })

@@ -13,6 +13,7 @@ class SetTenant
         $user = $request->user();
         if ($user && $user->role !== 'super_admin' && $user->shop_id) {
             app()->instance('currentShopId', $user->shop_id);
+            if ($user->shop) app()->instance('currentShop', $user->shop);
         }
 
         return $next($request);

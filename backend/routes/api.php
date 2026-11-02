@@ -59,10 +59,15 @@ Route::prefix('super')->middleware(['auth:sanctum', 'super_admin'])->group(funct
 });
 
 // ---- لوحة إدارة المحل ----
-Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
+Route::middleware(['auth:sanctum', 'tenant', 'idem'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/uploads', [UploadController::class, 'store']);
+
+    // بيانات الموقع لمحل المستخدم نفسه (تستخدمها لوحة التحكم: الكتالوج/الإعدادات/حاسبة السعر)
+    Route::get('/site/settings', [SiteController::class, 'settings']);
+    Route::get('/site/catalog', [SiteController::class, 'catalog']);
+    Route::post('/site/quote', [SiteController::class, 'quote']);
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 

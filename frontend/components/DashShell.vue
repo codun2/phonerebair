@@ -21,15 +21,33 @@
         <NuxtLink to="/admin/prices" :class="{ on: active === 'prices' }"><i class="ti ti-tag"></i> {{ t('الأسعار والأعطال') }}</NuxtLink>
         <NuxtLink to="/admin/catalog" :class="{ on: active === 'catalog' }"><i class="ti ti-list-details"></i> {{ t('الماركات والموديلات') }}</NuxtLink>
         <NuxtLink to="/admin/settings" :class="{ on: active === 'settings' }"><i class="ti ti-settings"></i> {{ t('الإعدادات') }}</NuxtLink>
+        <NuxtLink to="/admin/sync" :class="{ on: active === 'sync' }">
+          <i class="ti ti-cloud-computing"></i> {{ t('المزامنة ودون اتصال') }}
+          <span v-if="pending + failed" class="nbadge" :class="{ warn: failed }">{{ pending + failed }}</span>
+        </NuxtLink>
       </nav>
       <div class="side-foot">
+        <button v-if="canInstall" class="sf inst" @click="install"><i class="ti ti-download"></i> {{ t('تثبيت التطبيق على الجهاز') }}</button>
         <div style="margin-bottom:10px"><LangSwitch /></div>
         <div class="su2"><div class="av2">{{ (user?.name || 'م').slice(0,2) }}</div><div><b>{{ user?.name || t('المدير') }}</b><small>{{ t('مدير عام') }}</small></div></div>
         <NuxtLink to="/" class="sf"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</NuxtLink>
         <button class="sf" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
       </div>
     </aside>
-    <main class="dmain"><slot /></main>
+    <main class="dmain">
+      <div v-if="!online" class="netbar off">
+        <i class="ti ti-wifi-off"></i>
+        <span>{{ t('أنت تعمل دون اتصال — التغييرات تُحفظ على الجهاز وتُرفع تلقائياً عند عودة الإنترنت') }}</span>
+        <NuxtLink v-if="pending" to="/admin/sync" class="nb-l">{{ pending }} {{ t('بالانتظار') }}</NuxtLink>
+      </div>
+      <div v-else-if="syncing" class="netbar sync"><i class="ti ti-refresh"></i> {{ t('جاري رفع التغييرات المحفوظة...') }}</div>
+      <div v-else-if="failed" class="netbar bad">
+        <i class="ti ti-alert-triangle"></i> {{ failed }} {{ t('عملية رفضها السيرفر') }}
+        <NuxtLink to="/admin/sync" class="nb-l">{{ t('مراجعة') }}</NuxtLink>
+      </div>
+      <div v-else-if="fromCache" class="netbar off"><i class="ti ti-database"></i> {{ t('تعرض آخر بيانات محفوظة — السيرفر لا يستجيب حالياً') }}</div>
+      <slot />
+    </main>
     <ConfirmDialog />
   </div>
 </template>
@@ -40,11 +58,16 @@ const { user, logout } = useAuth()
 const { t } = useI18n()
 const { api } = useApi()
 const { has, ensure } = useFeatures()
+const { online, pending, failed, syncing, fromCache, canInstall, install, warmUp, flush } = useOffline()
+const router = useRouter()
 
 const newBookings = ref(0)
 onMounted(async () => {
   await ensure()
   try { newBookings.value = (await api('/dashboard/stats')).new_bookings } catch {}
+  flush()
+  // تحميل مسبق للبيانات والصفحات حتى تفتح اللوحة كاملة دون اتصال
+  setTimeout(() => warmUp(api, router, user.value?.shop?.features || []), 1500)
 })
 </script>
 
@@ -69,5 +92,13 @@ nav a.on .nbadge { background: #fff; color: var(--accent); }
 .sf { display: flex; align-items: center; gap: 11px; padding: 10px 12px; font-size: 13.5px; color: #8A909C; background: none; border: none; cursor: pointer; width: 100%; font-family: inherit; border-radius: 9px; }
 .sf:hover { color: #fff; background: var(--ink-2); }
 .dmain { padding: 26px; background: var(--bg); }
+.netbar { display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; flex-wrap: wrap; }
+.netbar i { font-size: 18px; }
+.netbar.off { background: #FFF4E0; color: #8A5300; border: 1px solid #F5D9A8; }
+.netbar.sync { background: #E6F1FB; color: var(--accent-d); border: 1px solid #C9DEF4; }
+.netbar.bad { background: #FDECEC; color: #A32020; border: 1px solid #F3C4C4; }
+.nb-l { margin-inline-start: auto; text-decoration: underline; color: inherit; }
+.nbadge.warn { background: #D33; }
+.inst { color: #fff !important; background: var(--accent) !important; margin-bottom: 10px; justify-content: center; }
 @media (max-width: 820px) { .dash { grid-template-columns: 1fr; } .side { flex-direction: row; flex-wrap: wrap; padding: 12px; } nav { flex-direction: row; flex-wrap: wrap; } .grp { display: none; } .side-foot { border: none; } .su2 { display: none; } }
 </style>

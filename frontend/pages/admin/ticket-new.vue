@@ -8,6 +8,7 @@
     <div v-if="done" class="ok-box" style="max-width:520px">
       <i class="ti ti-circle-check" style="font-size:26px"></i>
       <div style="margin-top:8px">{{ tr('تم فتح التذكرة') }} <b>{{ done }}</b></div>
+      <div v-if="queued" class="q-note"><i class="ti ti-cloud-upload"></i> {{ tr('تم فتح التذكرة على الجهاز — ستُرفع للسيرفر ويُعطى رقمها النهائي عند عودة الاتصال') }}</div>
       <div style="margin-top:12px;display:flex;gap:10px;justify-content:center">
         <NuxtLink to="/admin/tickets" class="btn btn-out">{{ tr('عرض التذاكر') }}</NuxtLink>
         <button class="btn btn-accent" @click="reset">{{ tr('تذكرة أخرى') }}</button>
@@ -65,6 +66,7 @@ const cat = ref({ makes: [], repair_types: [] })
 const techs = ref([])
 const statuses = ref([])
 const done = ref('')
+const queued = ref(false)
 const err = ref('')
 const busy = ref(false)
 
@@ -89,11 +91,16 @@ async function submit() {
   if (!f.value.customer_name || !f.value.customer_phone) { err.value = 'اسم الزبون ورقم الجوال مطلوبان'; return }
   busy.value = true
   try {
-    const r = await api('/dashboard/tickets', { method: 'POST', body: f.value })
+    const offline = {
+      repair_type: cat.value.repair_types.find(x => x.id === f.value.repair_type_id)?.name || null,
+      technician: techs.value.find(x => x.id === f.value.technician_id)?.name || null,
+    }
+    const r = await api('/dashboard/tickets', { method: 'POST', body: f.value, offline })
     done.value = r.ticket_no
+    queued.value = !!r._queued
   } catch (e) { err.value = 'تعذّر حفظ التذكرة — تحقق من الحقول' } finally { busy.value = false }
 }
-function reset() { done.value = ''; f.value = blank(); onMake() }
+function reset() { done.value = ''; queued.value = false; f.value = blank(); onMake() }
 
 onMounted(async () => {
   cat.value = await api('/site/catalog')
@@ -106,6 +113,7 @@ onMounted(async () => {
 <style scoped>
 .ph { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
 .cols { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+.q-note { margin-top: 10px; font-size: 12.5px; color: #8A5300; background: #FFF4E0; border-radius: 8px; padding: 8px 10px; display: flex; gap: 6px; align-items: center; justify-content: center; }
 .hint { background: #E6F1FB; border-radius: 9px; padding: 11px 13px; font-size: 12px; color: var(--accent-d); display: flex; gap: 8px; margin: 4px 0 14px; }
 @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
 </style>
