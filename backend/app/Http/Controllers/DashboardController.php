@@ -76,7 +76,7 @@ class DashboardController extends Controller
     {
         $ticket->load(['repairType', 'technician', 'media', 'events.user:id,name',
             'customer', 'parts.item:id,name,qty', 'payments.user:id,name']);
-        $ticket->append(['paid', 'balance', 'parts_cost', 'warranty_until']);
+        $ticket->append(['paid', 'balance', 'parts_cost', 'warranty_until', 'fault_ids', 'repair_types']);
         $ticket->has_password = filled($ticket->getRawOriginal('device_password'));
 
         return response()->json([
@@ -628,7 +628,7 @@ class DashboardController extends Controller
 
     private function validatedTicket(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'customer_id' => 'nullable|integer',
             'customer_name' => 'required|string|max:120',
             'customer_phone' => 'required|string|max:30',
@@ -638,6 +638,8 @@ class DashboardController extends Controller
             'imei' => 'nullable|string|max:40',
             'serial' => 'nullable|string|max:60',
             'repair_type_id' => 'nullable|exists:repair_types,id',
+            'repair_type_ids' => 'nullable|array',
+            'repair_type_ids.*' => 'integer|exists:repair_types,id',
             'description' => 'nullable|string|max:2000',
             'condition' => 'nullable|array',
             'accessories' => 'nullable|array',
@@ -650,6 +652,17 @@ class DashboardController extends Controller
             'status' => 'required|in:' . implode(',', Ticket::STATUSES),
             'technician_id' => 'nullable|exists:technicians,id',
         ]);
+
+        // توحيد الأعطال: المصفوفة هي المصدر، والعطل الرئيسي = أولها (للتوافق وحاسبة السعر)
+        if (array_key_exists('repair_type_ids', $data)) {
+            $ids = array_values(array_unique(array_map('intval', $data['repair_type_ids'] ?? [])));
+            $data['repair_type_ids'] = $ids;
+            $data['repair_type_id'] = $ids[0] ?? null;
+        } elseif (! empty($data['repair_type_id'])) {
+            $data['repair_type_ids'] = [(int) $data['repair_type_id']];
+        }
+
+        return $data;
     }
 
     private function validatedItem(Request $request): array

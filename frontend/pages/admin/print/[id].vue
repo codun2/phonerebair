@@ -10,7 +10,7 @@
         <div>{{ t.customer_name }}</div>
         <div dir="ltr">{{ t.customer_phone }}</div>
         <div>{{ t.make }} {{ t.model }}</div>
-        <div v-if="t.repair_type?.name">{{ t.repair_type.name }}</div>
+        <div v-if="faultText">{{ faultText }}</div>
         <div class="ldate">{{ (t.created_at || '').slice(0, 10) }}</div>
       </div>
     </div>
@@ -33,7 +33,7 @@
         <tr><td>الزبون</td><td><b>{{ t.customer_name }}</b></td><td>الجوال</td><td dir="ltr">{{ t.customer_phone }}</td></tr>
         <tr><td>الجهاز</td><td>{{ t.make }} {{ t.model }}</td><td>التاريخ</td><td dir="ltr">{{ (t.created_at || '').slice(0, 16).replace('T', ' ') }}</td></tr>
         <tr><td>IMEI</td><td dir="ltr">{{ t.imei || '—' }}</td><td>السيريال</td><td dir="ltr">{{ t.serial || '—' }}</td></tr>
-        <tr><td>العطل</td><td colspan="3">{{ t.repair_type?.name || '' }} {{ t.description ? '— ' + t.description : '' }}</td></tr>
+        <tr><td>العطل</td><td colspan="3">{{ faultText }}{{ t.description ? ' — ' + t.description : '' }}</td></tr>
       </table>
 
       <template v-if="type === 'receipt'">
@@ -108,6 +108,7 @@ const condLabels = { screen: 'الشاشة', body: 'الهيكل', camera: 'ال
 const methodLabels = { cash: 'نقدي', card: 'شبكة/بطاقة', transfer: 'تحويل', other: 'أخرى' }
 const methodLabel = (m) => methodLabels[m] || m
 const condEntries = computed(() => Object.entries(t.value.condition || {}).filter(([, v]) => v))
+const faultText = computed(() => (t.value.repair_types?.length ? t.value.repair_types.join('، ') : (t.value.repair_type?.name || '')))
 const paymentsAsc = computed(() => [...(t.value.payments || [])].sort((a, b) => (a.paid_at || '').localeCompare(b.paid_at || '')))
 const money = (n) => Number(n || 0).toLocaleString('ar-EG') + ' ر.س'
 const labor = computed(() => Math.max(0, (Number(t.value.price) || 0) - (t.value.parts || []).reduce((a, p) => a + p.qty * Number(p.unit_price), 0)))

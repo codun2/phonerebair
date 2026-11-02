@@ -38,7 +38,7 @@
               <div class="rowline"><span>{{ tr('الجهاز') }}</span><b>{{ t.make }} {{ t.model }}</b></div>
               <div class="rowline"><span>IMEI</span><b dir="ltr">{{ t.imei || '—' }}</b></div>
               <div class="rowline"><span>{{ tr('الرقم التسلسلي') }}</span><b dir="ltr">{{ t.serial || '—' }}</b></div>
-              <div class="rowline"><span>{{ tr('العطل') }}</span><b>{{ t.repair_type?.name || '—' }}</b></div>
+              <div class="rowline"><span>{{ tr('الأعطال') }}</span><b>{{ faultText || '—' }}</b></div>
               <div class="rowline"><span>{{ tr('كلمة مرور الجهاز') }}</span>
                 <b v-if="!t.has_password" class="muted">{{ tr('لم تُسجَّل') }}</b>
                 <b v-else-if="pw !== null" dir="ltr">{{ pw }} <button class="act sm" @click="pw = null"><i class="ti ti-eye-off"></i></button></b>
@@ -291,6 +291,7 @@ const money = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG
 const label = (k) => statuses.value.find((s) => s.key === k)?.label || k
 const methodLabel = (k) => payMethods.value.find((m) => m.key === k)?.label || k
 const condEntries = computed(() => Object.entries(t.value.condition || {}).filter(([, v]) => v))
+const faultText = computed(() => (t.value.repair_types?.length ? t.value.repair_types.join('، ') : (t.value.repair_type?.name || '')))
 const paid = computed(() => t.value.paid ?? 0)
 const balance = computed(() => t.value.balance ?? Math.max(0, (t.value.price || 0) - paid.value))
 const overdue = computed(() => t.value.promised_at && !['delivered', 'cancelled', 'rejected', 'unrepairable'].includes(t.value.status) && t.value.promised_at.slice(0, 10) < new Date().toISOString().slice(0, 10))
@@ -420,7 +421,9 @@ function editBody() {
   return {
     customer_id: x.customer_id, customer_name: x.customer_name, customer_phone: x.customer_phone,
     device_type: x.device_type, make: x.make, model: x.model, imei: x.imei, serial: x.serial,
-    repair_type_id: x.repair_type?.id || x.repair_type_id, description: x.description,
+    repair_type_id: x.repair_type?.id || x.repair_type_id,
+    repair_type_ids: x.fault_ids || (x.repair_type_ids) || (x.repair_type?.id ? [x.repair_type.id] : []),
+    description: x.description,
     condition: x.condition, accessories: x.accessories,
     estimated_cost: x.estimated_cost, price: x.price, promised_at: x.promised_at?.slice(0, 10),
     warranty_months: x.warranty_months, status: x.status, technician_id: x.technician?.id || x.technician_id,

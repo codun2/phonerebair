@@ -181,7 +181,7 @@ class SiteController extends Controller
                 'ticket_no' => $ticket->ticket_no,
                 'customer_name' => $ticket->customer_name,
                 'device' => trim($ticket->make . ' ' . $ticket->model),
-                'repair_type' => $ticket->repairType?->name,
+                'repair_type' => implode('، ', $ticket->repair_types) ?: $ticket->repairType?->name,
                 'technician' => $ticket->technician?->name,
                 'status' => $ticket->status,
                 'status_label' => Ticket::STATUS_LABELS[$ticket->status] ?? $ticket->status,

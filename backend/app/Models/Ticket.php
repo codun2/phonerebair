@@ -23,7 +23,7 @@ class Ticket extends Model
     protected $fillable = ['shop_id',
         'ticket_no', 'customer_id', 'customer_name', 'customer_phone', 'device_type',
         'make', 'model', 'imei', 'serial',
-        'repair_type_id', 'description', 'condition', 'accessories', 'device_password',
+        'repair_type_id', 'repair_type_ids', 'description', 'condition', 'accessories', 'device_password',
         'estimated_cost', 'price', 'promised_at', 'warranty_months', 'status',
         'approved_at', 'approved_by', 'approval_via',
         'technician_id', 'created_by', 'delivered_at',
@@ -34,6 +34,7 @@ class Ticket extends Model
         'estimated_cost' => 'decimal:2',
         'condition' => 'array',
         'accessories' => 'array',
+        'repair_type_ids' => 'array',
         'device_password' => 'encrypted',   // لا تُخزَّن أبداً كنص مكشوف
         'promised_at' => 'date',
         'approved_at' => 'datetime',
@@ -76,6 +77,21 @@ class Ticket extends Model
     public function repairType()
     {
         return $this->belongsTo(RepairType::class);
+    }
+
+    /** كل أعطال التذكرة (أسماء) — المصفوفة إن وُجدت، وإلا العطل المفرد */
+    public function getFaultIdsAttribute(): array
+    {
+        $ids = $this->repair_type_ids ?: ($this->repair_type_id ? [$this->repair_type_id] : []);
+        return array_values(array_unique(array_map('intval', $ids)));
+    }
+
+    public function getRepairTypesAttribute(): array
+    {
+        $ids = $this->fault_ids;
+        if (empty($ids)) return [];
+        $names = RepairType::whereIn('id', $ids)->pluck('name', 'id');
+        return collect($ids)->map(fn ($id) => $names[$id] ?? null)->filter()->values()->all();
     }
 
     public function technician()

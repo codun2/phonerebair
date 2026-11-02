@@ -59,10 +59,11 @@
             <div><label>IMEI</label><input v-model="f.imei" placeholder="356..." dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
             <div><label>{{ tr('الرقم التسلسلي (Serial)') }}</label><input v-model="f.serial" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
           </div>
+          <div class="frow">
+            <label>{{ tr('أنواع الأعطال') }} <span class="muted" style="font-weight:400">({{ tr('يمكن اختيار أكثر من عطل') }})</span></label>
+            <MultiSelect v-model="f.repair_type_ids" :options="cat.repair_types" :placeholder="tr('— اختر الأعطال —')" :search-placeholder="tr('بحث عن عطل…')" :empty-text="tr('لا نتائج')" @change="autoPrice" />
+          </div>
           <div class="g2 frow">
-            <div><label>{{ tr('نوع العطل') }}</label>
-              <select v-model="f.repair_type_id" @change="autoPrice"><option :value="null">{{ tr('— اختر —') }}</option><option v-for="t in cat.repair_types" :key="t.id" :value="t.id">{{ t.name }}</option></select>
-            </div>
             <div><label>{{ tr('كلمة مرور الجهاز (اختياري)') }}</label>
               <input v-model="f.device_password" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" :placeholder="tr('تُحفظ مشفّرة ولا تظهر إلا عند الطلب')" />
             </div>
@@ -140,7 +141,7 @@ const condFields = [
 ]
 const accOptions = ['شاحن', 'كيبل', 'كفر', 'شريحة', 'ذاكرة', 'علبة']
 
-const blank = () => ({ customer_id: null, customer_name: '', customer_phone: '', device_type: 'phone', make: '', model: '', imei: '', serial: '', repair_type_id: null, description: '', device_password: '', estimated_cost: null, price: null, promised_at: '', warranty_months: 6, technician_id: null, status: 'received', accessories: [] })
+const blank = () => ({ customer_id: null, customer_name: '', customer_phone: '', device_type: 'phone', make: '', model: '', imei: '', serial: '', repair_type_ids: [], description: '', device_password: '', estimated_cost: null, price: null, promised_at: '', warranty_months: 6, technician_id: null, status: 'received', accessories: [] })
 const f = ref(blank())
 const cond = ref({ screen: '', body: '', camera: '', power: '', note: '' })
 
@@ -168,9 +169,10 @@ function pick(c) {
 async function autoPrice() {
   const make = cat.value.makes.find(m => m.name === f.value.make)
   const model = models.value.find(x => x.name === f.value.model)
-  if (!make || !f.value.repair_type_id) return
+  const firstFault = f.value.repair_type_ids[0]
+  if (!make || !firstFault) return
   try {
-    const r = await api('/site/quote', { method: 'POST', body: { make_id: make.id, car_model_id: model?.id || null, repair_type_id: f.value.repair_type_id } })
+    const r = await api('/site/quote', { method: 'POST', body: { make_id: make.id, car_model_id: model?.id || null, repair_type_id: firstFault } })
     if (r.found) { f.value.estimated_cost = r.price; f.value.warranty_months = r.warranty_months }
   } catch {}
 }
@@ -185,7 +187,7 @@ async function submit() {
     const body = { ...f.value, condition, promised_at: f.value.promised_at || null }
     if (!body.device_password) delete body.device_password
     const offline = {
-      repair_type: cat.value.repair_types.find(x => x.id === f.value.repair_type_id)?.name || null,
+      repair_type: f.value.repair_type_ids.map(id => cat.value.repair_types.find(x => x.id === id)?.name).filter(Boolean).join('، ') || null,
       technician: techs.value.find(x => x.id === f.value.technician_id)?.name || null,
     }
     const r = await api('/dashboard/tickets', { method: 'POST', body, offline })

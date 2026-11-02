@@ -651,6 +651,10 @@ const DICT: Record<string, string> = {
   'تم تسجيل عدم الموافقة على التكلفة. جهازك جاهز للاستلام.': 'Cost was declined. Your device is ready for pickup.',
   'نأسف، تعذّر إصلاح جهازك. يمكنك المرور لاستلامه.': 'Sorry, your device could not be repaired. You can pick it up.',
   'تم إلغاء الطلب. للاستفسار تواصل مع المحل.': 'The request was cancelled. Contact the shop for questions.',
+  'يمكن اختيار أكثر من عطل': 'you can pick more than one',
+  '— اختر الأعطال —': '— select faults —',
+  'بحث عن عطل…': 'Search a fault…',
+  'الأعطال': 'Faults',
 }
 
 export function useI18n() {
