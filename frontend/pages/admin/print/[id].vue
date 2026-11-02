@@ -128,18 +128,24 @@ onMounted(async () => {
 .qr.sm :deep(svg) { width: 52px; height: 52px; }
 .dno { display: block; font-size: 13px; color: #0C447C; margin-top: 3px; }
 .doctitle { text-align: center; font-size: 16px; font-weight: 800; margin: 14px 0; }
-table.meta { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 10px; }
-table.meta td { border: 1px solid #ddd; padding: 7px 10px; }
-table.meta td:nth-child(odd) { background: #f5f7fa; color: #555; width: 14%; white-space: nowrap; }
+table.meta { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; margin-bottom: 10px; border: 1px solid #e3e6ec; border-radius: 10px; overflow: hidden; }
+table.meta td { border-bottom: 1px solid #eef0f4; border-inline-start: 1px solid #eef0f4; padding: 9px 12px; }
+table.meta tr:last-child td { border-bottom: none; }
+table.meta td:last-child { border-inline-start: none; }
+table.meta td:nth-child(odd) { background: #f6f8fa; color: #6b7280; width: 15%; white-space: nowrap; font-weight: 600; }
 .sect { font-weight: 800; font-size: 12.5px; margin: 12px 0 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; font-size: 11.5px; }
 .chips span { border: 1px solid #ddd; border-radius: 6px; padding: 3px 9px; }
-table.lines { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
-table.lines td { border: 1px solid #ddd; padding: 8px 10px; }
+table.lines { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin-top: 14px; border: 1px solid #e3e6ec; border-radius: 10px; overflow: hidden; }
+table.lines td { border-bottom: 1px solid #eef0f4; padding: 10px 12px; }
+table.lines tr:last-child td { border-bottom: none; }
 table.lines td.l { text-align: start; font-weight: 700; }
+/* الفاتورة: رأس أزرق + أعمدة محاذاة + صفوف المجاميع مميّزة */
 table.lines.inv .h td { background: #185FA5; color: #fff; font-weight: 700; }
-table.lines .tot td { background: #f5f7fa; font-weight: 800; font-size: 14px; }
-table.lines .due td { color: #A32020; font-weight: 800; }
+table.lines.inv td:nth-child(2) { width: 16%; text-align: center; color: #6b7280; }
+table.lines.inv td:last-child { width: 26%; font-weight: 600; }
+table.lines.inv .tot td { background: #f6f8fa; font-weight: 800; font-size: 14px; border-top: 1.5px solid #185FA5; }
+table.lines.inv .due td { color: #A32020; font-weight: 800; background: #fdf2f2; }
 .terms { margin-top: 16px; font-size: 11px; color: #444; line-height: 1.8; background: #f8f9fb; border-radius: 8px; padding: 10px 14px; }
 .doc footer { text-align: center; margin-top: 22px; font-size: 12px; color: #666; }
 
