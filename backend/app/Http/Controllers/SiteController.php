@@ -152,4 +152,60 @@ class SiteController extends Controller
                 ->values(),
         ]);
     }
+
+    /** تتبّع مباشر برابط التذكرة (رمز عام غير قابل للتخمين) — بلا تسجيل دخول */
+    public function trackByToken(string $token)
+    {
+        $ticket = Ticket::with(['repairType:id,name', 'technician:id,name', 'events', 'shop:id,name,phone,address,logo_path'])
+            ->where('public_token', $token)
+            ->first();
+
+        if (! $ticket) {
+            return response()->json(['found' => false, 'message' => 'رابط غير صالح'], 404);
+        }
+
+        // المراحل المرئية للزبون (نخفي المسودة والحالات الداخلية غير المفيدة له)
+        $flow = ['received', 'inspecting', 'awaiting_approval', 'waiting_part', 'in_repair', 'testing', 'ready', 'delivered'];
+        $terminal = ['rejected', 'unrepairable', 'cancelled'];
+        $idx = array_search($ticket->status, $flow);
+
+        return response()->json([
+            'found' => true,
+            'shop' => [
+                'name' => $ticket->shop?->name,
+                'phone' => $ticket->shop?->phone,
+                'address' => $ticket->shop?->address,
+                'logo' => $ticket->shop?->logo_path,
+            ],
+            'ticket' => [
+                'ticket_no' => $ticket->ticket_no,
+                'customer_name' => $ticket->customer_name,
+                'device' => trim($ticket->make . ' ' . $ticket->model),
+                'repair_type' => $ticket->repairType?->name,
+                'technician' => $ticket->technician?->name,
+                'status' => $ticket->status,
+                'status_label' => Ticket::STATUS_LABELS[$ticket->status] ?? $ticket->status,
+                'is_terminal' => in_array($ticket->status, $terminal),
+                'is_ready' => in_array($ticket->status, ['ready', 'delivered']),
+                'price' => $ticket->price ? (float) $ticket->price : null,
+                'promised_at' => $ticket->promised_at?->toDateString(),
+                'warranty_months' => $ticket->warranty_months,
+                'warranty_until' => $ticket->warranty_until,
+                'created_at' => $ticket->created_at->format('Y-m-d'),
+                'events' => $ticket->events->sortBy('created_at')->values()->map(fn ($e) => [
+                    'status' => $e->status,
+                    'status_label' => Ticket::STATUS_LABELS[$e->status] ?? $e->status,
+                    'note' => $e->note,
+                    'at' => $e->created_at->format('Y-m-d H:i'),
+                ]),
+            ],
+            // خط سير المراحل لعرض مؤشّر التقدّم
+            'flow' => collect($flow)->map(fn ($s, $i) => [
+                'key' => $s,
+                'label' => Ticket::STATUS_LABELS[$s],
+                'done' => $idx !== false && $i <= $idx,
+                'current' => $s === $ticket->status,
+            ])->values(),
+        ]);
+    }
 }

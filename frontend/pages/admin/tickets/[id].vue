@@ -188,6 +188,17 @@
             <div v-if="errPay" class="err">{{ errPay }}</div>
           </div>
 
+          <!-- رابط التتبّع للزبون -->
+          <div class="panel" v-if="trackUrl">
+            <div class="sec-t"><i class="ti ti-link" style="color:var(--accent)"></i> {{ tr('رابط تتبّع الزبون') }}</div>
+            <p class="track-hint">{{ tr('أرسل هذا الرابط للزبون ليتابع مراحل الإصلاح بنفسه دون اتصال بك.') }}</p>
+            <div class="track-box" dir="ltr">{{ trackUrl }}</div>
+            <div class="g2" style="margin-top:10px">
+              <button class="btn btn-out" @click="copyTrack"><i class="ti" :class="copied ? 'ti-check' : 'ti-copy'"></i> {{ copied ? tr('تم النسخ') : tr('نسخ الرابط') }}</button>
+              <a :href="waTrack" target="_blank" class="btn btn-wa"><i class="ti ti-brand-whatsapp"></i> {{ tr('إرسال') }}</a>
+            </div>
+          </div>
+
           <!-- الضمان والفني -->
           <div class="panel">
             <div class="sec-t">{{ tr('الضمان والإسناد') }}</div>
@@ -308,11 +319,25 @@ function intlPhone(p) {
   else if (n.startsWith('0')) n = '966' + n.slice(1)
   return n
 }
+// رابط التتبّع المباشر للزبون
+const trackUrl = computed(() => t.value?.public_token ? `${location.origin}/t/${t.value.public_token}` : '')
+const copied = ref(false)
+async function copyTrack() {
+  try { await navigator.clipboard.writeText(trackUrl.value); copied.value = true; setTimeout(() => copied.value = false, 2000) }
+  catch { /* نسخ احتياطي */ const el = document.createElement('textarea'); el.value = trackUrl.value; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove(); copied.value = true; setTimeout(() => copied.value = false, 2000) }
+}
+const waTrack = computed(() => {
+  if (!t.value?.customer_phone) return '#'
+  const text = `مرحباً ${t.value.customer_name || ''}،\nيمكنك متابعة حالة إصلاح جهازك (تذكرة ${t.value.ticket_no}) من هذا الرابط:\n${trackUrl.value}\n\n${settings.value.shop_name || ''}`
+  return `https://wa.me/${intlPhone(t.value.customer_phone)}?text=${encodeURIComponent(text)}`
+})
+
 const waLink = computed(() => {
   if (!t.value?.customer_phone) return null
   const ctx = { ...t.value, device: [t.value.make, t.value.model].filter(Boolean).join(' ') || 'جهازك', balance: balance.value }
   const line = (waMessages[t.value.status] || waMessages.received)(ctx)
-  const text = `مرحباً ${t.value.customer_name || ''}،\n${line}\n\n${settings.value.shop_name || ''}`
+  const track = trackUrl.value ? `\n\nلمتابعة حالة جهازك: ${trackUrl.value}` : ''
+  const text = `مرحباً ${t.value.customer_name || ''}،\n${line}${track}\n\n${settings.value.shop_name || ''}`
   return `https://wa.me/${intlPhone(t.value.customer_phone)}?text=${encodeURIComponent(text)}`
 })
 
@@ -463,6 +488,8 @@ onMounted(async () => {
 .tl .ev { display: flex; gap: 10px; padding: 8px 0; }
 .tl .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
 .okline { margin-top: 10px; background: #E4F6EF; color: var(--green); border-radius: 9px; padding: 10px 13px; font-size: 12.5px; display: flex; gap: 7px; align-items: center; }
+.track-hint { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+.track-box { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; font-size: 11.5px; color: var(--accent-d); word-break: break-all; }
 .paybig { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .paybig > div { background: var(--bg); border-radius: 10px; padding: 10px 14px; }
 .paybig small { color: var(--muted); font-size: 11.5px; display: block; }

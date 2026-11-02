@@ -3,11 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use App\Models\Concerns\BelongsToShop;
 
 class Ticket extends Model
 {
     use BelongsToShop;
+
+    /** رمز تتبّع عام يُولَّد تلقائياً عند إنشاء أي تذكرة (حتى المُنشأة دون اتصال) */
+    protected static function booted(): void
+    {
+        static::creating(function (Ticket $t) {
+            if (empty($t->public_token)) {
+                $t->public_token = Str::random(32);
+            }
+        });
+    }
 
     protected $fillable = ['shop_id',
         'ticket_no', 'customer_id', 'customer_name', 'customer_phone', 'device_type',

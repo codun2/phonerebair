@@ -25,6 +25,9 @@ Route::get('/plans', fn () => \App\Models\Plan::where('is_active', true)
 // ---- تسجيل محل جديد (self-signup → بانتظار الموافقة) ----
 Route::post('/register-shop', [App\Http\Controllers\ShopRegistrationController::class, 'register']);
 
+// ---- تتبّع التذكرة برابط مباشر (عام، بلا تسجيل دخول) ----
+Route::get('/track/{token}', [SiteController::class, 'trackByToken']);
+
 // ---- الموقع العام لكل محل: /api/shops/{slug}/... ----
 Route::prefix('shops/{shopSlug}')->middleware('shop.slug')->group(function () {
     Route::get('/settings', [SiteController::class, 'settings']);
