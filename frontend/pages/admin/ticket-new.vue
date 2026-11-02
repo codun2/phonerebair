@@ -52,7 +52,7 @@
               <select v-model="f.make" @change="onMake"><option v-for="m in cat.makes" :key="m.id" :value="m.name">{{ m.name }}</option></select>
             </div>
             <div><label>{{ tr('الموديل') }}</label>
-              <select v-model="f.model"><option v-for="md in models" :key="md.id" :value="md.name">{{ md.name }}</option></select>
+              <select v-model="f.model" @change="autoPrice"><option v-for="md in models" :key="md.id" :value="md.name">{{ md.name }}</option></select>
             </div>
           </div>
           <div class="g2 frow">
@@ -95,7 +95,7 @@
       <div class="panel">
         <div class="sec-t"><i class="ti ti-receipt" style="color:var(--accent)"></i> {{ tr('السعر والإسناد') }}</div>
         <div class="g2 frow">
-          <div><label>{{ tr('التقدير الأولي') }}</label><input v-model.number="f.estimated_cost" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+          <div><label>{{ tr('التقدير الأولي') }}</label><input v-model.number="f.estimated_cost" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" @input="priceEdited = true" /></div>
           <div><label>{{ tr('السعر المتفق عليه') }}</label><input v-model.number="f.price" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
         </div>
         <div class="frow"><label>{{ tr('موعد التسليم المتوقع') }}</label><input v-model="f.promised_at" type="date" dir="ltr" /></div>
@@ -146,7 +146,7 @@ const f = ref(blank())
 const cond = ref({ screen: '', body: '', camera: '', power: '', note: '' })
 
 const models = computed(() => cat.value.makes.find(m => m.name === f.value.make)?.models || [])
-function onMake() { f.value.model = models.value[0]?.name || '' }
+function onMake() { f.value.model = models.value[0]?.name || ''; autoPrice() }
 function addAcc() { if (accExtra.value.trim()) { f.value.accessories.push(accExtra.value.trim()); accExtra.value = '' } }
 
 function suggest() {
@@ -166,14 +166,25 @@ function pick(c) {
   matches.value = []
 }
 
+const priceEdited = ref(false) // لا نكتب فوق سعر عدّله المستخدم يدوياً
+
+// يجمع أسعار كل الأعطال المختارة ليعطي التقدير الأولي الكلي
 async function autoPrice() {
   const make = cat.value.makes.find(m => m.name === f.value.make)
   const model = models.value.find(x => x.name === f.value.model)
-  const firstFault = f.value.repair_type_ids[0]
-  if (!make || !firstFault) return
+  const ids = f.value.repair_type_ids
+  if (!ids.length) { if (!priceEdited.value) f.value.estimated_cost = null; return }
+  if (!make) return
   try {
-    const r = await api('/site/quote', { method: 'POST', body: { make_id: make.id, car_model_id: model?.id || null, repair_type_id: firstFault } })
-    if (r.found) { f.value.estimated_cost = r.price; f.value.warranty_months = r.warranty_months }
+    const quotes = await Promise.all(ids.map(id =>
+      api('/site/quote', { method: 'POST', body: { make_id: make.id, car_model_id: model?.id || null, repair_type_id: id } }).catch(() => null)
+    ))
+    const found = quotes.filter(q => q?.found)
+    if (!priceEdited.value && found.length) {
+      f.value.estimated_cost = found.reduce((sum, q) => sum + Number(q.price || 0), 0)
+      // أقصر ضمان بين الأعطال المسعّرة
+      f.value.warranty_months = Math.min(...found.map(q => Number(q.warranty_months ?? 6)))
+    }
   } catch {}
 }
 
