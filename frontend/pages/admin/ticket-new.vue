@@ -29,7 +29,7 @@
           <div class="g2 frow">
             <div style="position:relative">
               <label>{{ tr('رقم الجوال *') }}</label>
-              <input v-model="f.customer_phone" placeholder="05xxxxxxxx" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" @input="suggest" />
+              <PhoneInput v-model="f.customer_phone" placeholder="5xxxxxxxx" @update:modelValue="suggest" />
               <div v-if="matches.length" class="sugg">
                 <button v-for="c in matches" :key="c.id" type="button" @mousedown.prevent="pick(c)">
                   <b>{{ c.name }}</b> <span dir="ltr">{{ c.phone }}</span> <small>{{ c.tickets_count }} {{ tr('تذاكر سابقة') }}</small>
@@ -152,10 +152,11 @@ function addAcc() { if (accExtra.value.trim()) { f.value.accessories.push(accExt
 function suggest() {
   picked.value = null; f.value.customer_id = null
   clearTimeout(debounce)
-  const v = f.value.customer_phone.trim()
-  if (v.length < 3) { matches.value = []; return }
+  // نبحث بآخر الأرقام المهمة حتى نطابق السجلات المحلية (05..) والدولية (‎+966..‎) معاً
+  const tail = (f.value.customer_phone || '').replace(/\D/g, '').replace(/^0+/, '').slice(-9)
+  if (tail.length < 3) { matches.value = []; return }
   debounce = setTimeout(async () => {
-    try { matches.value = (await api('/dashboard/customers?search=' + encodeURIComponent(v))).slice(0, 5) } catch { matches.value = [] }
+    try { matches.value = (await api('/dashboard/customers?search=' + encodeURIComponent(tail))).slice(0, 5) } catch { matches.value = [] }
   }, 300)
 }
 function pick(c) {

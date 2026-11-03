@@ -26,10 +26,10 @@
           <div class="sec-t"><i class="ti ti-id" style="color:var(--accent)"></i> {{ t('البيانات الأساسية') }}</div>
           <div class="g2 frow">
             <div><label>{{ t('الاسم') }} <span class="req">*</span></label><input v-model="f.name" :placeholder="t('الاسم الكامل')" /></div>
-            <div><label>{{ t('رقم الجوال') }} <span class="req">*</span></label><input v-model="f.phone" placeholder="05xxxxxxxx" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+            <div><label>{{ t('رقم الجوال') }} <span class="req">*</span></label><PhoneInput v-model="f.phone" placeholder="5xxxxxxxx" /></div>
           </div>
           <div class="g2 frow">
-            <div><label>{{ t('جوال إضافي') }}</label><input v-model="f.alt_phone" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+            <div><label>{{ t('جوال إضافي') }}</label><PhoneInput v-model="f.alt_phone" placeholder="5xxxxxxxx" /></div>
             <div><label>{{ t('البريد الإلكتروني') }}</label><input v-model="f.email" type="email" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
           </div>
         </div>

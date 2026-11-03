@@ -725,6 +725,8 @@ const DICT: Record<string, string> = {
   'نتائج البحث': 'Search results',
   'المجموع': 'Total',
   'مسح': 'Clear',
+  'بحث عن دولة أو مقدمة': 'Search country or code',
+  'لا نتائج': 'No results',
 }
 
 export function useI18n() {
