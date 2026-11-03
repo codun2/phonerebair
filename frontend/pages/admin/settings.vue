@@ -53,6 +53,15 @@
       <a :href="'/s/' + (f.slug || 'main')" target="_blank" class="link" style="display:inline-block;margin-top:14px"><i class="ti ti-external-link"></i> {{ t('معاينة موقعي العام') }}</a>
     </div>
 
+    <div class="panel" style="max-width:720px;margin-top:16px">
+      <h3 class="sec-t"><i class="ti ti-moneybag" style="color:var(--accent)"></i> {{ t('التسعير والأرباح') }}</h3>
+      <div class="frow" style="max-width:300px">
+        <label>{{ t('هامش الربح الافتراضي %') }}</label>
+        <input v-model.number="f.profit_margin" type="number" min="0" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" placeholder="30" />
+        <div class="hint">{{ t('يُستخدم في صفحة «الأسعار والأعطال» لحساب سعر البيع تلقائياً من تكلفة الفني. تقدر تغيّر الهامش لكل عطل على حدة.') }}</div>
+      </div>
+    </div>
+
     <button class="btn btn-accent btn-lg" style="margin-top:16px" @click="save" :disabled="busy"><i class="ti ti-device-floppy"></i> {{ busy ? '...' : t('حفظ الإعدادات') }}</button>
   </DashShell>
 </template>
@@ -78,6 +87,7 @@ onMounted(async () => {
   for (const k of ['show_quote', 'show_services', 'show_why', 'show_track_cta']) {
     if (s[k] === undefined || s[k] === null || s[k] === '') s[k] = '1'
   }
+  if (s.profit_margin === undefined || s.profit_margin === null || s.profit_margin === '') s.profit_margin = 30
   f.value = s
 })
 </script>

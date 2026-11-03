@@ -533,6 +533,8 @@ class DashboardController extends Controller
         // المظهر: اللون الأساسي + إظهار/إخفاء أقسام الصفحة الرئيسية
         'theme_primary',
         'show_quote', 'show_services', 'show_why', 'show_track_cta',
+        // التسعير: هامش الربح الافتراضي للمحل (نسبة مئوية)
+        'profit_margin',
     ];
 
     public function getSettings()
@@ -703,6 +705,7 @@ class DashboardController extends Controller
             'make_id' => 'required|exists:makes,id',
             'car_model_id' => 'nullable|exists:car_models,id',
             'repair_type_id' => 'required|exists:repair_types,id',
+            'cost' => 'nullable|numeric|min:0',
             'price' => 'required|numeric|min:0',
             'duration_minutes' => 'nullable|integer|min:5|max:600',
             'warranty_months' => 'nullable|integer|min:0|max:36',

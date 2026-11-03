@@ -9,12 +9,12 @@ class PriceRule extends Model
 {
     use BelongsToShop;
 
-    protected $fillable = ['shop_id', 
+    protected $fillable = ['shop_id',
         'make_id', 'car_model_id', 'repair_type_id',
-        'price', 'duration_minutes', 'warranty_months',
+        'cost', 'price', 'duration_minutes', 'warranty_months',
     ];
 
-    protected $casts = ['price' => 'decimal:2'];
+    protected $casts = ['cost' => 'decimal:2', 'price' => 'decimal:2'];
 
     public function make()
     {

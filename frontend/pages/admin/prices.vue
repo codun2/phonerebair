@@ -19,13 +19,15 @@
 
     <!-- عرض جدول -->
     <table v-if="view === 'table'">
-      <thead><tr><th>{{ tr('الماركة') }}</th><th>{{ tr('الموديل') }}</th><th>{{ tr('العطل') }}</th><th>{{ tr('السعر') }}</th><th>{{ tr('المدة') }}</th><th>{{ tr('الضمان') }}</th><th></th></tr></thead>
+      <thead><tr><th>{{ tr('الماركة') }}</th><th>{{ tr('الموديل') }}</th><th>{{ tr('العطل') }}</th><th>{{ tr('التكلفة') }}</th><th>{{ tr('السعر') }}</th><th>{{ tr('الربح') }}</th><th>{{ tr('المدة') }}</th><th>{{ tr('الضمان') }}</th><th></th></tr></thead>
       <tbody>
         <tr v-for="r in filtered" :key="r.id">
           <td>{{ r.make?.name }}</td>
           <td>{{ r.model?.name || tr('كل الموديلات') }}</td>
           <td>{{ r.repair_type?.name }}</td>
+          <td class="muted">{{ r.cost != null ? fmt(r.cost) + ' ' + tr('ر.س') : '—' }}</td>
           <td><b>{{ fmt(r.price) }} {{ tr('ر.س') }}</b></td>
+          <td class="profit">{{ profitOf(r) != null ? '+' + fmt(profitOf(r)) : '—' }}</td>
           <td>{{ r.duration_minutes }} {{ tr('د') }}</td>
           <td>{{ r.warranty_months }} {{ tr('ش') }}</td>
           <td style="text-align:left">
@@ -33,7 +35,7 @@
             <button class="act danger" @click="remove(r)"><i class="ti ti-trash"></i></button>
           </td>
         </tr>
-        <tr v-if="!filtered.length"><td colspan="7" class="empty">{{ q ? tr('لا نتائج لبحثك') : tr('لا توجد أسعار بعد') }}</td></tr>
+        <tr v-if="!filtered.length"><td colspan="9" class="empty">{{ q ? tr('لا نتائج لبحثك') : tr('لا توجد أسعار بعد') }}</td></tr>
       </tbody>
     </table>
 
@@ -51,6 +53,10 @@
           </div>
         </div>
         <div class="pc-price">{{ fmt(r.price) }} <span>{{ tr('ر.س') }}</span></div>
+        <div v-if="r.cost != null" class="pc-cost">
+          <span>{{ tr('التكلفة') }}: {{ fmt(r.cost) }}</span>
+          <span class="profit">{{ tr('الربح') }}: +{{ fmt(profitOf(r)) }}</span>
+        </div>
         <div class="pc-meta">
           <span><i class="ti ti-clock"></i> {{ r.duration_minutes }} {{ tr('د') }}</span>
           <span><i class="ti ti-shield-check"></i> {{ tr('ضمان') }} {{ r.warranty_months }} {{ tr('ش') }}</span>
@@ -67,8 +73,26 @@
           <div><label>{{ tr('الموديل') }}</label><select v-model="form.car_model_id" :disabled="!!form.id"><option :value="null">{{ tr('كل الموديلات') }}</option><option v-for="md in modelsFor" :key="md.id" :value="md.id">{{ md.name }}</option></select></div>
         </div>
         <div class="frow"><label>{{ tr('نوع العطل *') }}</label><select v-model="form.repair_type_id" :disabled="!!form.id"><option :value="null">{{ tr('— اختر —') }}</option><option v-for="t in cat.repair_types" :key="t.id" :value="t.id">{{ t.name }}</option></select></div>
+
+        <div class="cost-box">
+          <div class="g2">
+            <div><label>{{ tr('تكلفة الفني (قطع + أجرة)') }}</label><input v-model.number="form.cost" type="number" min="0" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" @input="recalc" :placeholder="tr('ر.س')" /></div>
+            <div><label>{{ tr('هامش الربح %') }}</label><input v-model.number="form.margin" type="number" min="0" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" @input="recalc" /></div>
+          </div>
+          <div class="cost-hint">
+            <i class="ti ti-bulb"></i>
+            {{ tr('السعر للزبون يُحسب تلقائياً = التكلفة + هامش الربح. تقدر تعدّل السعر يدوياً. التكلفة لا تظهر للزبون.') }}
+          </div>
+        </div>
+
         <div class="g3 frow">
-          <div><label>{{ tr('السعر (ر.س) *') }}</label><input v-model.number="form.price" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
+          <div>
+            <label>{{ tr('السعر للزبون (ر.س) *') }}</label>
+            <input v-model.number="form.price" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" />
+            <div v-if="formProfit != null" class="profit-line" :class="{ neg: formProfit < 0 }">
+              {{ formProfit >= 0 ? tr('ربح') : tr('خسارة') }}: {{ formProfit >= 0 ? '+' : '' }}{{ fmt(formProfit) }} {{ tr('ر.س') }}
+            </div>
+          </div>
           <div><label>{{ tr('المدة (دقيقة)') }}</label><input v-model.number="form.duration_minutes" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
           <div><label>{{ tr('الضمان (أشهر)') }}</label><input v-model.number="form.warranty_months" type="number" dir="ltr" :style="{ textAlign: isEn ? 'left' : 'right' }" /></div>
         </div>
@@ -92,7 +116,22 @@ const form = ref(null)
 const err = ref('')
 const q = ref('')
 const view = ref('table')
+const defaultMargin = ref(30) // هامش الربح الافتراضي للمحل (من الإعدادات)
 const fmt = (n) => Number(n).toLocaleString('ar-EG')
+
+// الربح لقاعدة سعر محفوظة = السعر - التكلفة (تقريب لأقرب عدد صحيح)
+const profitOf = (r) => (r.cost == null ? null : Math.round(Number(r.price) - Number(r.cost)))
+// الربح الحيّ داخل النموذج
+const formProfit = computed(() => {
+  const c = form.value?.cost, p = form.value?.price
+  if (c == null || c === '' || p == null || p === '') return null
+  return Math.round(Number(p) - Number(c))
+})
+// حساب سعر البيع من التكلفة والهامش (يُستدعى عند تغيير أيٍّ منهما)
+function recalc() {
+  const c = Number(form.value.cost), m = Number(form.value.margin)
+  if (c > 0 && !Number.isNaN(m) && m >= 0) form.value.price = Math.round(c * (1 + m / 100))
+}
 
 const modelsFor = computed(() => cat.value.makes.find(m => m.id === form.value?.make_id)?.models || [])
 const filtered = computed(() => {
@@ -103,15 +142,21 @@ const filtered = computed(() => {
 function setView(v) { view.value = v; if (import.meta.client) try { localStorage.setItem('pr_prices_view', v) } catch {} }
 
 async function load() { rules.value = await api('/dashboard/price-rules') }
-function openNew() { err.value = ''; form.value = { make_id: null, car_model_id: null, repair_type_id: null, price: null, duration_minutes: 45, warranty_months: 3 } }
+function openNew() { err.value = ''; form.value = { make_id: null, car_model_id: null, repair_type_id: null, cost: null, margin: defaultMargin.value, price: null, duration_minutes: 45, warranty_months: 3 } }
 function edit(r) {
   err.value = ''
+  const cost = r.cost != null ? Number(r.cost) : null
+  const price = Number(r.price)
+  // اشتقاق الهامش من (السعر/التكلفة) عند وجود تكلفة، وإلا الهامش الافتراضي للمحل
+  const margin = cost && cost > 0 ? Math.round((price / cost - 1) * 100) : defaultMargin.value
   form.value = {
     id: r.id,
     make_id: r.make?.id ?? r.make_id,
     car_model_id: r.model?.id ?? r.car_model_id ?? null,
     repair_type_id: r.repair_type?.id ?? r.repair_type_id,
-    price: Number(r.price),
+    cost,
+    margin,
+    price,
     duration_minutes: r.duration_minutes,
     warranty_months: r.warranty_months,
   }
@@ -132,6 +177,7 @@ async function remove(r) {
 onMounted(async () => {
   if (import.meta.client) try { view.value = localStorage.getItem('pr_prices_view') || 'table' } catch {}
   await load(); cat.value = await api('/site/catalog')
+  try { const s = await api('/dashboard/settings'); if (s?.profit_margin) defaultMargin.value = Number(s.profit_margin) } catch {}
 })
 </script>
 
@@ -158,5 +204,14 @@ onMounted(async () => {
 .pc-meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--muted); }
 .pc-meta i { margin-inline-end: 3px; }
 .ov { position: fixed; inset: 0; background: rgba(20,30,50,.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
-.modal { background: #fff; border-radius: 14px; padding: 22px; width: 480px; max-width: 92vw; }
+.modal { background: #fff; border-radius: 14px; padding: 22px; width: 480px; max-width: 92vw; max-height: 92vh; overflow-y: auto; }
+td.muted { color: var(--muted); font-size: 13px; }
+td.profit, .pc-cost .profit { color: var(--green); font-weight: 700; }
+.cost-box { background: #F7F9FC; border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 4px 0 12px; }
+.cost-box .g2 { margin-bottom: 0; }
+.cost-hint { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+.cost-hint i { color: var(--gold); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.profit-line { font-size: 12px; font-weight: 700; color: var(--green); margin-top: 6px; }
+.profit-line.neg { color: #C0392B; }
+.pc-cost { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; }
 </style>
