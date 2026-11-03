@@ -720,6 +720,11 @@ const DICT: Record<string, string> = {
   'أو اكتب تخصصاً آخر': 'or type another specialty',
   'الفني غير موجود': 'Technician not found',
   'تعذّر تحميل بيانات الفني': 'Could not load technician',
+  'بحث: التذكرة / الزبون / الطريقة / المبلغ': 'Search: ticket / customer / method / amount',
+  'لا نتائج مطابقة للبحث': 'No results match your search',
+  'نتائج البحث': 'Search results',
+  'المجموع': 'Total',
+  'مسح': 'Clear',
 }
 
 export function useI18n() {

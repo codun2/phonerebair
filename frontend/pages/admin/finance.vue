@@ -26,19 +26,28 @@
       <div>
         <div class="panel">
           <div class="phh"><h3>{{ t('المدفوعات المحصّلة في الفترة') }}</h3></div>
+          <div class="search"><i class="ti ti-search"></i>
+            <input v-model="q" :placeholder="t('بحث: التذكرة / الزبون / الطريقة / المبلغ')" />
+            <button v-if="q" class="clr" :title="t('مسح')" @click="q = ''"><i class="ti ti-x"></i></button>
+          </div>
           <table>
             <thead><tr><th>{{ t('المبلغ') }}</th><th>{{ t('الطريقة') }}</th><th>{{ t('التذكرة') }}</th><th>{{ t('الزبون') }}</th><th>{{ t('الوقت') }}</th></tr></thead>
             <tbody>
-              <tr v-for="p in payments" :key="p.id">
+              <tr v-for="p in filteredPayments" :key="p.id">
                 <td><b>{{ fmt(p.amount) }}</b></td>
                 <td>{{ t(p.method_label) }}</td>
                 <td><NuxtLink :to="'/admin/tickets/' + p.ticket_id" class="link">{{ p.ticket_no }}</NuxtLink></td>
                 <td>{{ p.customer }}</td>
                 <td class="muted">{{ p.paid_at }}</td>
               </tr>
+              <tr v-if="payments.length && !filteredPayments.length"><td colspan="5" class="empty">{{ t('لا نتائج مطابقة للبحث') }}</td></tr>
               <tr v-if="!payments.length"><td colspan="5" class="empty">{{ t('لا مدفوعات في هذه الفترة') }}</td></tr>
             </tbody>
           </table>
+          <div v-if="q && filteredPayments.length" class="sumrow">
+            <span>{{ t('نتائج البحث') }}: <b>{{ filteredPayments.length }}</b></span>
+            <span>{{ t('المجموع') }}: <b>{{ fmt(searchTotal) }}</b></span>
+          </div>
         </div>
 
         <div class="panel">
@@ -46,7 +55,7 @@
           <table>
             <thead><tr><th>{{ t('التذكرة') }}</th><th>{{ t('الزبون') }}</th><th>{{ t('السعر') }}</th><th>{{ t('المدفوع') }}</th><th>{{ t('المتبقي') }}</th><th>{{ t('الحالة') }}</th></tr></thead>
             <tbody>
-              <tr v-for="d in debts" :key="d.ticket_id" @click="navigateTo('/admin/tickets/' + d.ticket_id)" style="cursor:pointer">
+              <tr v-for="d in filteredDebts" :key="d.ticket_id" @click="navigateTo('/admin/tickets/' + d.ticket_id)" style="cursor:pointer">
                 <td><b style="color:var(--accent-d)">{{ d.ticket_no }}</b></td>
                 <td>{{ d.customer_name }}<div class="muted" dir="ltr" style="text-align:right">{{ d.customer_phone }}</div></td>
                 <td>{{ fmt(d.price) }}</td>
@@ -54,6 +63,7 @@
                 <td><b style="color:#A32020">{{ fmt(d.balance) }}</b></td>
                 <td><StatusPill :status="d.status" :label="d.status_label" /></td>
               </tr>
+              <tr v-if="debts.length && !filteredDebts.length"><td colspan="6" class="empty">{{ t('لا نتائج مطابقة للبحث') }}</td></tr>
               <tr v-if="!debts.length"><td colspan="6" class="empty">{{ t('لا ديون — ممتاز 👌') }}</td></tr>
             </tbody>
           </table>
@@ -108,10 +118,25 @@ const payments = ref([])
 const debts = ref([])
 const expenses = ref([])
 const err = ref('')
+const q = ref('')
 const categories = ['إيجار', 'كهرباء وماء', 'رواتب', 'مشتريات', 'اتصالات', 'أخرى']
 const exp = ref({ title: '', amount: null, category: 'أخرى', spent_at: today })
 
 const fmt = (n) => Number(n || 0).toLocaleString(isEn.value ? 'en-US' : 'ar-EG')
+
+const filteredPayments = computed(() => {
+  const s = q.value.trim().toLowerCase()
+  if (!s) return payments.value
+  return payments.value.filter((p) => [p.ticket_no, p.customer, t(p.method_label), String(p.amount)]
+    .some((x) => (x || '').toString().toLowerCase().includes(s)))
+})
+const filteredDebts = computed(() => {
+  const s = q.value.trim().toLowerCase()
+  if (!s) return debts.value
+  return debts.value.filter((d) => [d.ticket_no, d.customer_name, d.customer_phone, String(d.balance)]
+    .some((x) => (x || '').toString().toLowerCase().includes(s)))
+})
+const searchTotal = computed(() => filteredPayments.value.reduce((a, p) => a + Number(p.amount || 0), 0))
 
 async function load() {
   const qs = `?from=${from.value}&to=${to.value}`
@@ -153,6 +178,13 @@ onMounted(load)
 .cols > div > .panel { margin-bottom: 16px; }
 .phh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .phh h3 { font-size: 15px; font-weight: 700; }
+.search { position: relative; margin-bottom: 12px; }
+.search > i { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+.search input { width: 100%; padding-inline-start: 36px; padding-inline-end: 34px; }
+.search .clr { position: absolute; inset-inline-end: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border: none; background: var(--line-2); border-radius: 50%; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.search .clr:hover { background: #E2E6EC; color: var(--ink); }
+.sumrow { display: flex; gap: 18px; justify-content: flex-end; padding: 11px 4px 2px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line-2); margin-top: 4px; }
+.sumrow b { color: var(--ink); }
 .muted { color: var(--muted); font-size: 12px; }
 .explist { margin-top: 14px; }
 .exprow { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-2); font-size: 13.5px; gap: 10px; }
