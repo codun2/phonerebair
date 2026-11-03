@@ -320,6 +320,7 @@ const DICT: Record<string, string> = {
   'السعر للزبون (ر.س) *': 'Customer price (SAR) *',
   'السعر للزبون يُحسب تلقائياً = التكلفة + هامش الربح. تقدر تعدّل السعر يدوياً. التكلفة لا تظهر للزبون.': 'The customer price is calculated automatically = cost + profit margin. You can edit the price manually. The cost is never shown to the customer.',
   'التسعير والأرباح': 'Pricing & profit',
+  'تعذّر حفظ الإعدادات — تأكد من صحة القيم وحاول مجدداً': 'Could not save settings — check the values and try again',
   'هامش الربح الافتراضي %': 'Default profit margin %',
   'يُستخدم في صفحة «الأسعار والأعطال» لحساب سعر البيع تلقائياً من تكلفة الفني. تقدر تغيّر الهامش لكل عطل على حدة.': 'Used on the “Prices & Faults” page to auto-calculate the sale price from the technician cost. You can override the margin per fault.',
   'التوافق': 'Compatibility',

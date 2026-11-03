@@ -4,6 +4,7 @@
     <p class="page-sub">{{ t('معلومات المحل والنصوص التي تظهر للزبائن في الموقع') }}</p>
 
     <div v-if="saved" class="ok-box" style="margin-bottom:16px;max-width:720px">{{ t('تم حفظ الإعدادات ✓') }}</div>
+    <div v-if="err" class="err" style="margin-bottom:16px;max-width:720px">{{ err }}</div>
 
     <div class="panel" style="max-width:720px">
       <h3 class="sec-t"><i class="ti ti-building-store" style="color:var(--accent)"></i> {{ t('معلومات المحل') }}</h3>
@@ -72,11 +73,13 @@ const { t, isEn } = useI18n()
 const f = ref({})
 const busy = ref(false)
 const saved = ref(false)
+const err = ref('')
 const presets = ['#185FA5', '#0F6E56', '#7A3EB1', '#C2410C', '#B4245B', '#111827']
 
 async function save() {
-  busy.value = true; saved.value = false
+  busy.value = true; saved.value = false; err.value = ''
   try { await api('/dashboard/settings', { method: 'PUT', body: f.value }); saved.value = true }
+  catch { err.value = t('تعذّر حفظ الإعدادات — تأكد من صحة القيم وحاول مجدداً') }
   finally { busy.value = false }
 }
 

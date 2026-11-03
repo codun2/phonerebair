@@ -551,6 +551,15 @@ class DashboardController extends Controller
 
     public function saveSettings(Request $request)
     {
+        // نقبل القيم الرقمية (مثل هامش الربح) ونخزّنها جميعًا كنصوص
+        $coerced = [];
+        foreach (self::SETTING_KEYS as $k) {
+            if ($request->has($k) && is_scalar($request->input($k))) {
+                $coerced[$k] = (string) $request->input($k);
+            }
+        }
+        $request->merge($coerced);
+
         $rules = [];
         foreach (self::SETTING_KEYS as $k) $rules[$k] = 'nullable|string|max:1000';
         $data = $request->validate($rules);
