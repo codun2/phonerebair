@@ -30,7 +30,7 @@
         </NuxtLink>
       </nav>
     </aside>
-    <main class="dmain">
+    <main ref="dmain" class="dmain">
       <!-- شريط علوي: المدير والأدوات (نُقلت من الشريط الجانبي) -->
       <header class="topbar">
         <div class="tb-user">
@@ -72,6 +72,11 @@ const { api } = useApi()
 const { has, ensure } = useFeatures()
 const { online, pending, failed, syncing, fromCache, canInstall, install, warmUp, flush } = useOffline()
 const router = useRouter()
+const route = useRoute()
+
+// عند التنقّل بين الصفحات نُرجع حاوية المحتوى لأعلى حتى تبدأ كل صفحة من رأسها
+const dmain = ref(null)
+watch(() => route.path, () => { dmain.value?.scrollTo({ top: 0 }) })
 
 const newBookings = ref(0)
 onMounted(async () => {
