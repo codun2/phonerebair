@@ -40,7 +40,7 @@
         <div class="tb-actions">
           <button v-if="canInstall" class="tb-btn accent" @click="install"><i class="ti ti-download"></i> {{ t('تثبيت التطبيق على الجهاز') }}</button>
           <LangSwitch />
-          <NuxtLink to="/" class="tb-btn"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</NuxtLink>
+          <a v-if="user?.shop?.slug" :href="'/s/' + user.shop.slug" target="_blank" class="tb-btn"><i class="ti ti-world"></i> {{ t('عرض الموقع') }}</a>
           <button class="tb-btn" @click="logout"><i class="ti ti-logout"></i> {{ t('خروج') }}</button>
         </div>
       </header>
