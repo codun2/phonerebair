@@ -54,8 +54,18 @@
           <div><label>{{ tr('رقم الجوال *') }}</label><input v-model="quick.customer_phone" placeholder="05xxxxxxxx" dir="ltr" /></div>
         </div>
         <div class="g2 frow">
-          <div><label>{{ tr('الماركة') }}</label><input v-model="quick.make" placeholder="Apple / Samsung..." /></div>
-          <div><label>{{ tr('الموديل') }}</label><input v-model="quick.model" /></div>
+          <div><label>{{ tr('الماركة') }}</label>
+            <select v-model="quick.make" @change="quick.model = ''">
+              <option value="">{{ tr('— اختر —') }}</option>
+              <option v-for="m in cat.makes" :key="m.id" :value="m.name">{{ m.name }}</option>
+            </select>
+          </div>
+          <div><label>{{ tr('الموديل') }}</label>
+            <select v-model="quick.model" :disabled="!quick.make">
+              <option value="">{{ quick.make ? tr('— اختر —') : tr('اختر الماركة أولاً') }}</option>
+              <option v-for="md in quickModels" :key="md.id" :value="md.name">{{ md.name }}</option>
+            </select>
+          </div>
         </div>
         <div class="frow"><label>{{ tr('العطل باختصار') }}</label><input v-model="quick.description" :placeholder="tr('شاشة مكسورة...')" /></div>
         <div v-if="qerr" class="err">{{ qerr }}</div>
@@ -76,8 +86,11 @@ const route = useRoute()
 const tickets = ref([])
 const counts = ref({})
 const statuses = ref([])
+const cat = ref({ makes: [] })
 const filter = ref('')
 const q = ref('')
+// موديلات الماركة المختارة في «الاستقبال السريع»
+const quickModels = computed(() => cat.value.makes?.find((m) => m.name === quick.value?.make)?.models || [])
 const quick = ref(null)
 const quickName = ref(null)
 const qerr = ref('')
@@ -113,8 +126,11 @@ async function saveQuick() {
 
 onMounted(async () => {
   await load()
+  try { cat.value = await api('/site/catalog') } catch {}
   if (route.query.open) navigateTo('/admin/tickets/' + route.query.open, { replace: true })
 })
+// تحديث مباشر للقائمة: كل 10 ثوانٍ تظهر التذاكر الجديدة وتغيّرات الحالة دون إعادة تحميل
+usePoll(load, 10000)
 </script>
 
 <style scoped>

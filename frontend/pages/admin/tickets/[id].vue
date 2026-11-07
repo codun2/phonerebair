@@ -342,15 +342,20 @@ const waLink = computed(() => {
   return `https://wa.me/${intlPhone(t.value.customer_phone)}?text=${encodeURIComponent(text)}`
 })
 
-async function load() {
+async function load(silent = false) {
   const r = await api('/dashboard/tickets/' + route.params.id)
   t.value = r.ticket
   // من قائمة الحالات حتى تنعكس التغييرات المعلّقة (أوفلاين) على الفور
   statusLabel.value = (r.statuses || []).find((s) => s.key === r.ticket.status)?.label || r.status_label || ''
   statuses.value = r.statuses || []
   payMethods.value = r.payment_methods || []
-  newStatus.value = r.ticket.status
-  apr.value.price = r.ticket.price || r.ticket.estimated_cost || null
+  // في التحديث الصامت (polling) لا نلمس حقول التحرير الجارية حتى لا نُفسد ما يكتبه المستخدم
+  if (!silent) {
+    newStatus.value = r.ticket.status
+    apr.value.price = r.ticket.price || r.ticket.estimated_cost || null
+  }
+  // أوقف التحديث الدوري نهائياً عند الحالة النهائية (توفيراً للموارد)
+  if (['delivered', 'cancelled'].includes(r.ticket.status)) poll?.stop()
 }
 
 async function changeStatus() {
@@ -461,6 +466,8 @@ onMounted(async () => {
   loadStock()
   try { techs.value = await api('/dashboard/technicians') } catch {}
 })
+// تحديث مباشر للحالة والأحداث والمدفوعات دون المساس بالحقول الجاري تحريرها
+const poll = usePoll(() => load(true), 8000)
 </script>
 
 <style scoped>

@@ -290,6 +290,7 @@ const DICT: Record<string, string> = {
   'الفني المسؤول': 'Assigned technician',
   'الضمان (أشهر)': 'Warranty (months)',
   '— اختر —': '— Select —',
+  'اختر الماركة أولاً': 'Select the brand first',
   '— بدون —': '— None —',
   'إنشاء التذكرة': 'Create ticket',
   'حفظ التذكرة': 'Save ticket',

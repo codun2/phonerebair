@@ -127,12 +127,20 @@ function isDefaultNote(e) {
   return e.note === e.status_label || e.note === 'تم فتح التذكرة'
 }
 
-onMounted(async () => {
+// حالات نهائية: ينتهي عندها الطلب فنوقف التحديث الدوري نهائياً (توفيراً للموارد)
+const DONE_STATUSES = ['delivered', 'cancelled']
+
+async function refresh(silent = false) {
   try {
     const r = await $fetch(config.public.apiBase + '/track/' + route.params.token, { headers: { Accept: 'application/json' } })
-    shop.value = r.shop; tk.value = r.ticket; flow.value = r.flow
-  } catch { notFound.value = true } finally { loading.value = false }
-})
+    shop.value = r.shop; tk.value = r.ticket; flow.value = r.flow; notFound.value = false
+    if (DONE_STATUSES.includes(tk.value.status)) poll.stop()
+  } catch { if (!silent) notFound.value = true } finally { if (!silent) loading.value = false }
+}
+
+onMounted(() => refresh(false))
+// تحديث مباشر للحالة: استعلام كل 5 ثوانٍ أثناء فتح الصفحة (دون إعادة تحميل)
+const poll = usePoll(() => refresh(true), 5000)
 
 useHead({ title: 'متابعة طلب الصيانة' })
 </script>

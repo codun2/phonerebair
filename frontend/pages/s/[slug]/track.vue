@@ -70,20 +70,27 @@ const lastNote = computed(() => ticket.value?.events?.[0]?.note || '')
 
 function pillClass(s) { return ({ ready: 'pill-g', in_repair: 'pill-y', awaiting_approval: 'pill-y', delivered: 'pill-gray', received: 'pill-r' })[s] || 'pill-gray' }
 
-async function run() {
+// حالات نهائية: ينتهي عندها الطلب فنوقف التحديث الدوري نهائياً (توفيراً للموارد)
+const DONE_STATUSES = ['delivered', 'cancelled']
+
+async function run(silent = false) {
   if (!q.value) return
-  loading.value = true; err.value = ''
+  if (!silent) { loading.value = true; err.value = '' }
   try {
     const r = await shopApi(slug, '/track', { method: 'POST', body: { q: q.value } })
     ticket.value = r.ticket
     statuses.value = r.statuses
+    // أوقف التحديث عند الحالة النهائية، واستأنفه لو بُحث عن تذكرة نشطة بعدها
+    if (ticket.value) DONE_STATUSES.includes(ticket.value.status) ? poll.stop() : poll.resume()
   } catch (e) {
-    ticket.value = null
-    err.value = t('لم نجد تذكرة بهذا الرقم — تأكد من الرقم وحاول مجدداً')
-  } finally { loading.value = false }
+    // في الاستعلام الصامت نُبقي آخر حالة ظاهرة ولا نُظهر خطأً عابراً
+    if (!silent) { ticket.value = null; err.value = t('لم نجد تذكرة بهذا الرقم — تأكد من الرقم وحاول مجدداً') }
+  } finally { if (!silent) loading.value = false }
 }
 
 onMounted(() => { loadSettings(); if (q.value) run() })
+// تحديث مباشر: كل 5 ثوانٍ نُحدّث التذكرة المعروضة (دون إعادة تحميل أو رمش)
+const poll = usePoll(() => { if (ticket.value && q.value) run(true) }, 5000)
 </script>
 
 <style scoped>
