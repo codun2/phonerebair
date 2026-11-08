@@ -25,11 +25,11 @@
         <div class="panel">
           <div class="sec-t"><i class="ti ti-phone" style="color:var(--accent)"></i> {{ t('التواصل') }}</div>
           <div class="g2 frow">
-            <div><label>{{ t('الجوال') }}</label><input v-model="f.phone" dir="ltr" :style="ltr" /></div>
-            <div><label>{{ t('جوال إضافي') }}</label><input v-model="f.alt_phone" dir="ltr" :style="ltr" /></div>
+            <div><label>{{ t('الجوال') }}</label><PhoneInput v-model="f.phone" placeholder="5xxxxxxxx" /></div>
+            <div><label>{{ t('جوال إضافي') }}</label><PhoneInput v-model="f.alt_phone" placeholder="5xxxxxxxx" /></div>
           </div>
           <div class="g2 frow">
-            <div><label>{{ t('واتساب') }}</label><input v-model="f.whatsapp" dir="ltr" :style="ltr" /></div>
+            <div><label>{{ t('واتساب') }}</label><PhoneInput v-model="f.whatsapp" placeholder="5xxxxxxxx" /></div>
             <div><label>{{ t('البريد الإلكتروني') }}</label><input v-model="f.email" type="email" dir="ltr" :style="ltr" /></div>
           </div>
           <div class="frow"><label>{{ t('الموقع الإلكتروني') }}</label><input v-model="f.website" dir="ltr" :style="ltr" placeholder="https://" /></div>
