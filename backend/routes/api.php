@@ -80,6 +80,7 @@ Route::middleware(['auth:sanctum', 'tenant', 'idem'])->group(function () {
     Route::post('/dashboard/tickets', [DashboardController::class, 'storeTicket']);
     Route::put('/dashboard/tickets/{ticket}', [DashboardController::class, 'updateTicket']);
     Route::post('/dashboard/tickets/{ticket}/status', [DashboardController::class, 'ticketStatus']);
+    Route::post('/dashboard/tickets/{ticket}/technician', [DashboardController::class, 'assignTechnician']);
     Route::delete('/dashboard/tickets/{ticket}', [DashboardController::class, 'destroyTicket']);
     Route::get('/dashboard/tickets/{ticket}/password', [DashboardController::class, 'ticketPassword']);
     Route::post('/dashboard/tickets/{ticket}/approval', [DashboardController::class, 'ticketApproval']);

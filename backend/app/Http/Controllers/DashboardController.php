@@ -243,6 +243,18 @@ class DashboardController extends Controller
         return response()->json($ticket->load(['repairType', 'technician', 'media', 'events']));
     }
 
+    /** تعيين/تغيير الفني المسؤول فقط (سريع من قائمة التذاكر) */
+    public function assignTechnician(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate(['technician_id' => 'nullable|exists:technicians,id']);
+        $ticket->update(['technician_id' => $data['technician_id']]);
+
+        return response()->json([
+            'message' => 'تم تعيين الفني',
+            'technician' => $ticket->technician()->first(['id', 'name']),
+        ]);
+    }
+
     /** تغيير الحالة فقط (سريع) */
     public function ticketStatus(Request $request, Ticket $ticket)
     {
@@ -600,6 +612,7 @@ class DashboardController extends Controller
             'status' => $t->status,
             'status_label' => Ticket::STATUS_LABELS[$t->status] ?? $t->status,
             'technician' => $t->technician?->name,
+            'technician_id' => $t->technician_id,
             'customer_id' => $t->customer_id,
             'paid' => isset($t->paid_sum) ? (float) $t->paid_sum : $t->paid,
             'balance' => round((float) ($t->price ?? 0) - (isset($t->paid_sum) ? (float) $t->paid_sum : $t->paid), 2),

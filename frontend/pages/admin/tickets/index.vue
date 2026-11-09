@@ -38,7 +38,12 @@
             <span v-if="t.promised_at" :style="t.overdue ? 'color:#A32020;font-weight:700' : ''">{{ t.promised_at }} <i v-if="t.overdue" class="ti ti-alert-triangle"></i></span>
             <span v-else class="muted">—</span>
           </td>
-          <td>{{ t.technician || '—' }}</td>
+          <td @click.stop>
+            <select class="tech-sel" :value="t.technician_id || ''" @change="assignTech(t, $event.target.value)">
+              <option value="">{{ tr('— بدون —') }}</option>
+              <option v-for="tech in techs" :key="tech.id" :value="tech.id">{{ tech.name }}</option>
+            </select>
+          </td>
         </tr>
         <tr v-if="!tickets.length"><td colspan="8" class="empty">{{ tr('لا توجد تذاكر بهذا الفلتر') }}</td></tr>
       </tbody>
@@ -87,6 +92,7 @@ const tickets = ref([])
 const counts = ref({})
 const statuses = ref([])
 const cat = ref({ makes: [] })
+const techs = ref([])
 const filter = ref('')
 const q = ref('')
 // موديلات الماركة المختارة في «الاستقبال السريع»
@@ -110,6 +116,13 @@ async function load() {
 function setFilter(f) { filter.value = f; load() }
 function onSearch() { clearTimeout(debounce); debounce = setTimeout(load, 350) }
 function open(t) { navigateTo('/admin/tickets/' + t.id) }
+// تعيين/تغيير الفني مباشرة من القائمة دون فتح التذكرة (تحديث تفاؤلي)
+async function assignTech(ticket, val) {
+  const id = val ? Number(val) : null
+  ticket.technician_id = id
+  ticket.technician = techs.value.find((x) => x.id === id)?.name || null
+  try { await api('/dashboard/tickets/' + ticket.id + '/technician', { method: 'POST', body: { technician_id: id } }) } catch {}
+}
 
 watch(quick, (v) => { if (v) { qerr.value = ''; nextTick(() => quickName.value?.focus()) } })
 async function saveQuick() {
@@ -127,6 +140,7 @@ async function saveQuick() {
 onMounted(async () => {
   await load()
   try { cat.value = await api('/site/catalog') } catch {}
+  try { techs.value = await api('/dashboard/technicians') } catch {}
   if (route.query.open) navigateTo('/admin/tickets/' + route.query.open, { replace: true })
 })
 // تحديث مباشر للقائمة: كل 10 ثوانٍ تظهر التذاكر الجديدة وتغيّرات الحالة دون إعادة تحميل
@@ -146,4 +160,7 @@ usePoll(load, 10000)
 .ov { position: fixed; inset: 0; background: rgba(20,30,50,.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
 .modal { background: #fff; border-radius: 14px; padding: 22px; width: 480px; max-width: 92vw; }
 .qhint { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; line-height: 1.7; }
+.tech-sel { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 5px 8px; font-family: inherit; font-size: 13px; color: var(--ink); cursor: pointer; max-width: 140px; }
+.tech-sel:hover { border-color: #C7CCD6; }
+.tech-sel:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px #E6F1FB; }
 </style>
